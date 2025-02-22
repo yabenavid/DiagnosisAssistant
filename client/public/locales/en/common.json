@@ -1,0 +1,19 @@
+{
+    "deleteregister":"Are you sure you want to delete this record?",
+    "selectedhospital": "Select a hospital",
+    "name": "Name",
+    "lasname": "Last Name",
+    "secondlastname": " Secound Last Name",
+    "specialism": "Specialism",
+    "email": "Email",
+    "password": "Password",
+    "hospital":"Hospital",
+    "errorupdate": "Error updating the item. Try again.",
+    "errordeleted": "An error has occurred while removing the item",
+    "alertupdated":"An error occurred while updating the item.",
+    "successdeleted":"Record successfully removed",
+    "errorregister": "An error occurred while creating the item.",
+    "address": "Address",
+    "phone": "Phone"
+
+}

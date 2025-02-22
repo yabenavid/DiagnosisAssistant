@@ -1,0 +1,95 @@
+/* Estilos generales de la barra de navegación */
+.navbar {
+    background-color: #9155a7 !important; /* Fondo de NavigationBar */
+    width: 100%; /*Ocupar todo el ancho disponible */
+    position: fixed; /*Fijar la barra en la parte superior */
+    top: 0;
+    left: 0;
+    z-index: 1000; /*Asegurar que esté por encima de otros elementos */
+    padding: 15px;
+}
+
+/* Contenedor dentro de la barra de navegación */
+.navbar .container {
+    max-width: 100%; /*Permitir que la barra se expanda */
+}
+
+/* Estilos de los enlaces de navegación */
+.navbar .nav-link {
+    color: white !important; /* Color del texto */
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    color: #6dcca3 !important; /* Cambio de color al pasar el mouse */
+}
+
+.navbar .navbar-brand {
+    color: white !important;
+    font-size: 1.5rem;
+}
+
+.navbar .navbar-toggler {
+    border: none;
+}
+
+/* Botón de login */
+.navbar .btn-light {
+    background-color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+.navbar .btn-light:hover {
+    background-color: #d4b3e0;
+}
+
+/* Icono de usuario */
+.navbar .bi-person-circle {
+    color: white;
+}
+
+/* Estilos específicos para los enlaces del menú */
+.navbar-nav .nav-item .nav-link {
+    padding: 10px 15px;
+    border-radius: 5px;
+}
+
+.navbar-nav .nav-item .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Hacer que los enlaces ocupen todo el espacio disponible en pantallas pequeñas */
+@media (max-width: 991px) {
+    .navbar-nav {
+        width: 100%;
+        text-align: center;
+    }
+
+    .navbar-nav .nav-item {
+        width: 100%;
+    }
+
+    .navbar-nav .nav-item .nav-link {
+        display: block;
+        padding: 10px;
+    }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 576px) {
+    .navbar {
+        padding: 10px;
+    }
+
+    .navbar .navbar-brand {
+        font-size: 1.2rem;
+    }
+
+    .navbar .btn-light {
+        padding: 5px 10px;
+        font-size: 0.9rem;
+    }
+}

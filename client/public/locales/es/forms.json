@@ -1,0 +1,9 @@
+{
+    "name": "Nombre",
+    "lasname": "Apellido",
+    "secondlastname": " Segundo Apellido",
+    "specialism": "Especialidad",
+    "email": "Correo",
+    "password": "Contraseña",
+    "hospital":"Hospital"
+}

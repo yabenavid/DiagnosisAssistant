@@ -1,0 +1,5 @@
+{
+    "errorupdate": "Error updating the doctor. Try again.",
+    "alertupdatedoctor":"An error occurred while updating the doctor.",
+    "test": "Error in {{name}}"
+}

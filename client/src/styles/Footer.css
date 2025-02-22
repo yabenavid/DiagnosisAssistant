@@ -1,0 +1,78 @@
+/* Estilos generales del footer */
+footer {
+    background-color: #6dcca3 !important; /* Fondo personalizado */
+    color: white;
+    padding: 40px 0;
+    text-align: center;
+}
+
+/* Contenedor */
+footer .container {
+    max-width: 1200px;
+    margin: auto;
+}
+
+/* Estilos de los encabezados */
+footer h5 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Estilos del texto y enlaces */
+footer p,
+footer a {
+    font-size: 1rem;
+    color: white;
+    text-decoration: none;
+    transition: color 0.3s ease-in-out;
+}
+
+footer a:hover {
+    color: #2a7e5e; /* Cambio de color al pasar el mouse */
+}
+
+/* Estilos de la lista de enlaces */
+footer .list-unstyled {
+    padding: 0;
+    list-style: none;
+}
+
+footer .list-unstyled li {
+    margin-bottom: 8px;
+}
+
+/* Estilos de los iconos de redes sociales */
+footer .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+footer .social-icons a {
+    font-size: 1.5rem;
+    transition: transform 0.3s ease-in-out;
+}
+
+footer .social-icons a:hover {
+    transform: scale(1.2);
+}
+
+/* Línea divisoria superior */
+footer .footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding-top: 15px;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    footer {
+        text-align: center;
+    }
+
+    .footer .row > div {
+        margin-bottom: 20px;
+    }
+}

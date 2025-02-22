@@ -1,0 +1,6 @@
+{
+    "errorupdate": "Error al actualizar el doctor. Intente nuevamente.",
+    "alertupdate": "Ocurrió un error al actualizar el doctor.",
+    "test": "Error en {{name}}"
+    
+}

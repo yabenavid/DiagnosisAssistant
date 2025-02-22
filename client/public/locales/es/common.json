@@ -1,0 +1,19 @@
+{
+    "deleteregister":"¿Estás seguro de que deseas eliminar este registro?",
+    "selectedhospital": "Seleccione un hospital",
+    "name": "Nombre",
+    "lasname": "Apellido",
+    "secondlastname": " Segundo Apellido",
+    "specialism": "Especialidad",
+    "email": "Correo",
+    "password": "Contraseña",
+    "hospital":"Hospital",
+    "errorupdate": "Error al actualizar el item. Intente nuevamente.",
+    "errordeleted": "A ocurrido un error removiendo el item.",
+    "alertupdated": "Ocurrió un error al actualizar el item.",
+    "successdeleted": "Registro eliminado con éxito.",
+    "errorregister": "Ocurrió un error al crear el item.",
+    "address": "Dirección",
+    "phone": "Teléfono"
+    
+}
