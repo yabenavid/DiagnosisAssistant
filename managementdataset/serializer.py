@@ -1,0 +1,89 @@
+# serializers.py
+from rest_framework import serializers
+from .models import ImgDataset
+from django.core.files.base import ContentFile
+from zipfile import ZipFile
+from django.core.files.storage import default_storage
+from segmentation.models import ImageSegmenter
+import shutil
+import os
+
+class ImageDatasetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImgDataset
+        fields = ['id', 'image', 'keypoints', 'descriptors']
+
+class MultipleImageUploadSerializer(serializers.Serializer):
+    images = serializers.ListField(
+        child=serializers.ImageField(),
+        allow_empty=False,
+        write_only=True
+    )
+
+    def create(self, validated_data):
+        images = validated_data.pop('images')
+        instances = [ImgDataset(image=image) for image in images]
+        return ImgDataset.objects.bulk_create(instances)
+
+class ZipImageUploadSerializer(serializers.Serializer):
+    zip_file = serializers.FileField()
+
+    def validate_zip_file(self, value):
+        if not value.name.endswith('.zip'):
+            raise serializers.ValidationError("Solo se permiten archivos ZIP.")
+        return value
+
+    def create(self, validated_data):
+        zip_file = validated_data['zip_file']
+        images = []
+        step = 'antes del with'
+        print(step)
+
+        try:
+            with ZipFile(zip_file, 'r') as zip_ref:
+                print("antes del loop")
+                for file_name in zip_ref.namelist():
+                    print(file_name)
+                    if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+                        image_file = zip_ref.read(file_name)
+                        image_content = ContentFile(image_file, name=file_name)
+                        original_path = default_storage.save("uploads/" + image_content.name, ContentFile(image_content.read()))
+                        
+                        step = 'segmentando imagen ' + image_content.name
+                        print(step)
+                        
+                        # SEGMENTAR ANTES DE GUARDAR
+                        segmenter = ImageSegmenter()
+                        segmented_images = segmenter.segment_images([image_content], original_path)
+                        
+                        step = 'guardando instancia'
+                        print(step)
+
+                        print(type(segmented_images[0]))
+
+                        img_instance = ImgDataset(image=segmented_images[0])
+                        img_instance.save()
+
+                        step = "Extrayendo keypoints y descriptores"
+                        print(step)
+
+                        # Extraer y guardar keypoints y descriptores
+                        img_instance.extract_and_save_features(default_storage.path(original_path))
+                        images.append(img_instance)
+        except Exception as e:
+            print(f'Failed reading, segmenting or saving the image. Reason: {e}')
+
+        # limpiar carpeta uploads
+        step = 'limpiando carpeta uploads'
+        print(step)
+        uploads_path = default_storage.path("uploads")
+        for filename in os.listdir(uploads_path):
+            file_path = os.path.join(uploads_path, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.unlink(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f'Failed to delete {file_path}. Reason: {e}')
+        return images

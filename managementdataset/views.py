@@ -1,0 +1,124 @@
+from rest_framework import generics
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .firebase_storage import upload_to_storage, list_files_in_storage, get_images, save_images_to_firebase
+from .models import ImgDataset
+from .serializer import MultipleImageUploadSerializer, ImageDatasetSerializer, ZipImageUploadSerializer
+from rest_framework.decorators import action
+from rest_framework import viewsets
+from django.conf import settings
+from rest_framework.decorators import authentication_classes, permission_classes
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .permissions import IsAdminUser
+
+# Create your views here.
+
+def index(request):
+    return HttpResponse('<h1>Index Page</h1>')
+
+def hello(request, username):
+    return HttpResponse('<h1>Hello %s!</h1>' % username)
+
+def about(request):
+    a = 1
+    return HttpResponse('<h1>About</h1>')
+
+def upload_file_view(request):
+    uploaded_file = request.FILES['file']
+    local_path = f"/tmp/{uploaded_file.name}"  # Ruta temporal
+    with open(local_path, 'wb') as f:
+        for chunk in uploaded_file.chunks():
+            f.write(chunk)
+    
+    # Subir el archivo a Firebase Storage
+    upload_to_storage(local_path, f"uploads/{uploaded_file.name}")
+    return JsonResponse({"status": "Archivo subido exitosamente"})
+
+def list_files_view(request):
+    # Obtener la lista de archivos del bucket
+    file_names = list_files_in_storage()
+    return JsonResponse({"files": file_names})
+
+def show_images(request):
+    # Obtener las URLs de las imágenes de la carpeta específica
+    image_urls = get_images()
+    return JsonResponse({"images": image_urls})
+
+# UPLOAD IN FIREBASE
+# @csrf_exempt
+# def upload_images_view(request):
+#     if request.method == "POST" and request.FILES:
+#         try:
+#             # Obtener todas las imágenes enviadas desde el frontend
+#             images = request.FILES.getlist('images')  # Obtiene la lista de imágenes
+
+#             if not images:
+#                 return JsonResponse({"error": "No se proporcionaron imágenes."}, status=400)
+
+#             # Procesar y guardar las imágenes
+#             image_urls = save_images_to_firebase(images)
+
+#             return JsonResponse({"status": "success", "image_urls": image_urls})
+
+#         except Exception as e:
+#             return JsonResponse({"status": "error", "message": str(e)})
+
+#    return JsonResponse({"error": "Método no permitido."}, status=400)
+
+@authentication_classes([JWTAuthentication])  # JWT Authentication
+@permission_classes([IsAdminUser])        # Only admin users can access
+class DatasetView(viewsets.ModelViewSet):
+    queryset = ImgDataset.objects.all()
+    serializer_class = ImageDatasetSerializer
+
+    def create(self, request, *args, **kwargs):
+
+        # TODO: ELIMINAR TODAS LAS IMAGENES EN S3 ANTES DE GUARDAR
+
+        serializer = ZipImageUploadSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            try:
+                instances = serializer.save()
+                return Response({"message": "Imágenes guardadas con éxito"}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        else:
+            return Response({"message": "El archivo enviado no es válido. Asegúrate de subir un archivo ZIP que contenga imágenes."}, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()  # Obtiene el objeto a eliminar
+        # Elimina el archivo de S3 antes de eliminar el registro
+        if instance.image:
+            instance.image.delete(save=False)  # Borra la imagen en S3
+        instance.delete()  # Elimina el registro de la base de datos
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # Count images
+    @action(detail=False, methods=['GET'], url_path='count')
+
+    def count(self, request, *args, **kwargs):
+        try:
+            # Si estamos en modo DEBUG, contamos las imágenes en la base de datos local
+            if settings.DEBUG:
+                count = ImgDataset.objects.count()
+            else:
+                # Si no estamos en modo DEBUG, contamos las imágenes en S3
+                storage = ImgDataset().image.storage
+                prefix = "media/dataset/"
+
+                # Listar todos los objetos en el bucket con el prefijo especificado
+                s3_objects = storage.bucket.objects.filter(Prefix=prefix)
+                count = sum(1 for _ in s3_objects)
+
+            return Response(count, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                0,
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
