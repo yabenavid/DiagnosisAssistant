@@ -28,6 +28,5 @@ urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),  # Custom login
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token
     path('logout/', LogoutView.as_view(), name ='logout'),  # Logout
-    path('', include('segmentation.urls')),
     path('', include('similaritysearch.urls'))
 ]
