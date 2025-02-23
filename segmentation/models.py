@@ -10,7 +10,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 
-class ImageSegmenter:
+class SamImageSegmenter:
     def __init__(self):
         # Load SAM model
         sam_checkpoint = "sam_vit_h.pth"
