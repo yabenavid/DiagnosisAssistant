@@ -4,14 +4,23 @@ from .models import ImgDataset
 from django.core.files.base import ContentFile
 from zipfile import ZipFile
 from django.core.files.storage import default_storage
-from segmentation.models import ImageSegmenter
+from segmentation.models import SamImageSegmenter
 import shutil
 import os
 
 class ImageDatasetSerializer(serializers.ModelSerializer):
+    keypoints = serializers.SerializerMethodField()
+    descriptors = serializers.SerializerMethodField()
+
     class Meta:
         model = ImgDataset
         fields = ['id', 'image', 'keypoints', 'descriptors']
+
+    def get_keypoints(self, obj):
+        return obj.get_keypoints()
+
+    def get_descriptors(self, obj):
+        return obj.get_descriptors()
 
 class MultipleImageUploadSerializer(serializers.Serializer):
     images = serializers.ListField(
@@ -43,7 +52,7 @@ class ZipImageUploadSerializer(serializers.Serializer):
             with ZipFile(zip_file, 'r') as zip_ref:
                 print("antes del loop")
                 for file_name in zip_ref.namelist():
-                    print(file_name)
+                    print('nombre de archivo: ' + file_name)
                     if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                         image_file = zip_ref.read(file_name)
                         image_content = ContentFile(image_file, name=file_name)
@@ -53,7 +62,7 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         print(step)
                         
                         # SEGMENTAR ANTES DE GUARDAR
-                        segmenter = ImageSegmenter()
+                        segmenter = SamImageSegmenter()
                         segmented_images = segmenter.segment_images([image_content], original_path)
                         
                         step = 'guardando instancia'
