@@ -8,25 +8,25 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 
 class ImageSimilarity:
-    def __init__(self, original_image_path, compare_image_path):
-        self.original_image_path = original_image_path
-        self.compare_image_path = compare_image_path
+    # def __init__(self, original_image_path, compare_image_path):
+    #     self.original_image_path = original_image_path
+    #     self.compare_image_path = compare_image_path
 
-    def are_images_identical(self):
-        """
-        Compara si dos imágenes son idénticas pixel a pixel.
-        """
-        original = cv2.imread(self.original_image_path)
-        compare = cv2.imread(self.compare_image_path)
+    # def are_images_identical(self):
+    #     """
+    #     Compara si dos imágenes son idénticas pixel a pixel.
+    #     """
+    #     original = cv2.imread(self.original_image_path)
+    #     compare = cv2.imread(self.compare_image_path)
 
-        if original.shape == compare.shape:
-            difference = cv2.subtract(original, compare)
-            b, g, r = cv2.split(difference)
-            if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
-                return True
-        return False
+    #     if original.shape == compare.shape:
+    #         difference = cv2.subtract(original, compare)
+    #         b, g, r = cv2.split(difference)
+    #         if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
+    #             return True
+    #     return False
 
-    def calculate_similarity(self):
+    def calculate_similarity(self, pacient_images):
         """
         Calcula la similitud entre dos imágenes utilizando SIFT y FLANN.
         Devuelve el porcentaje de similitud y la imagen con los matches.
