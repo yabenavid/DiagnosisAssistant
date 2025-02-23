@@ -1,2 +1,4 @@
 sam_vit_h.pth
 db.sqlite3
+media
+media/*
