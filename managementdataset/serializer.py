@@ -5,6 +5,7 @@ from django.core.files.base import ContentFile
 from zipfile import ZipFile
 from django.core.files.storage import default_storage
 from segmentation.models import SamImageSegmenter
+from vectorization.models import ImageResizer
 import shutil
 import os
 
@@ -45,6 +46,14 @@ class ZipImageUploadSerializer(serializers.Serializer):
     def create(self, validated_data):
         zip_file = validated_data['zip_file']
         images = []
+
+        step = 'cargando modelo de sam'
+        print(step)
+
+        segmenter = SamImageSegmenter()
+
+        image_resizer = ImageResizer()
+
         step = 'antes del with'
         print(step)
 
@@ -56,16 +65,26 @@ class ZipImageUploadSerializer(serializers.Serializer):
                     if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                         image_file = zip_ref.read(file_name)
                         image_content = ContentFile(image_file, name=file_name)
-                        original_path = default_storage.save("uploads/" + image_content.name, ContentFile(image_content.read()))
                         
-                        step = 'segmentando imagen ' + image_content.name
+                        print('INITIALIZING VECTORIZATION')
+                        step = 'vectorizando imagen: ' + file_name
+                        print(step)
+                        # VECTORIZAR
+                        resized_images = image_resizer.procesar_imagenes([image_content])
+                        print('VECTORIZATION FINISHED')
+
+                        resized_image = resized_images[0]
+                        original_path = default_storage.save("uploads/" + resized_image.name, ContentFile(resized_image.read()))
+
+                        # SEGMENTAR
+                        print('INITIALIZING SEGMENTATION')
+                        step = 'segmentando imagen: ' + resized_image.name
                         print(step)
                         
-                        # SEGMENTAR ANTES DE GUARDAR
-                        segmenter = SamImageSegmenter()
-                        segmented_images = segmenter.segment_images([image_content], original_path)
-                        
-                        step = 'guardando instancia'
+                        segmented_images = segmenter.segment_images(resized_images, original_path)
+                        print('SEGMENTATION FINISHED')
+
+                        step = 'guardando instancia en DB'
                         print(step)
 
                         print(type(segmented_images[0]))

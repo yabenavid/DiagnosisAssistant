@@ -3,21 +3,44 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from segmentation.models import SamImageSegmenter
 from similaritysearch.models import ImageSimilarity
+from vectorization.models import ImageResizer
 
 @csrf_exempt
 def segment_image(request):
     if request.method == "POST" and request.FILES.getlist("images"):
         try:
-            print('INITIALIZING SEGMENTATION')
             image_files = request.FILES.getlist("images")
             segment_model = request.POST.get("segment_model", None)
 
-            if (segment_model == 1):
+            # Depuración: imprimir los datos POST recibidos
+            print("POST data:", request.POST)
+            print("segment_model:", segment_model)
+
+            if segment_model is None:
+                return HttpResponse("segment_model parameter is missing", status=400)
+
+
+            print('INITIALIZING VECTORIZATION')
+
+            # Procesar las imágenes usando pyvips para estandarizarlas y mejorar su calidad
+            image_resizer = ImageResizer()
+            resized_images = image_resizer.procesar_imagenes(image_files)
+
+            print('VECTORIZATION FINISHED')
+
+
+            print('INITIALIZING SEGMENTATION')
+
+            if (segment_model == '1'):
+                print('Cargando modelo de sam')
                 segmenter = SamImageSegmenter()
-                segmented_images = segmenter.segment_images(image_files)
-            elif (segment_model == 2):
+                print('Segmentando')
+                segmented_images = segmenter.segment_images(resized_images)
+            elif (segment_model == '2'):
                 segmenter = SamImageSegmenter()
-                segmented_images = segmenter.segment_images(image_files, image_path = 'uploads/imagen.jpg')
+                segmented_images = segmenter.segment_images(resized_images, image_path = 'uploads/imagen.jpg')
+            else:
+                return HttpResponse("Invalid segmentation model param", status=400)
 
             print('SEGMENTATION FINISHED')
 

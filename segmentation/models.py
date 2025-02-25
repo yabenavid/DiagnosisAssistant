@@ -31,16 +31,16 @@ class SamImageSegmenter:
                 file_path = image_path
 
             # Leer la imagen
-            print('Leer la imagen')
+            print('>>Leer la imagen')
             img = cv2.imread(default_storage.path(file_path))
             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             # Generar máscaras
-            print('Generar máscaras')
+            print('>>Generar máscaras')
             masks = self.mask_generator.generate(img_rgb)
 
             # Aplicar máscara sobre la imagen
-            print('Aplicar máscara sobre la imagen')
+            print('>>Aplicar máscara sobre la imagen')
             mask_image = np.zeros_like(img, dtype=np.uint8)
 
             for mask in masks:
@@ -48,11 +48,11 @@ class SamImageSegmenter:
                 mask_image[segmentation] = [0, 255, 0]  # Máscara en color verde
 
             # Combinar la imagen original con la máscara
-            print('Combinar la imagen original con la máscara')
+            print('>>Combinar la imagen original con la máscara')
             blended = cv2.addWeighted(img, 0.6, mask_image, 0.4, 0)
 
             # Guardar la imagen procesada temporalmente
-            print('Guardar la imagen procesada temporalmente')
+            print('>>Guardar la imagen procesada temporalmente')
             output_path = os.path.join(settings.MEDIA_ROOT, f"segmented_{image_file.name}")
             cv2.imwrite(output_path, blended)
 

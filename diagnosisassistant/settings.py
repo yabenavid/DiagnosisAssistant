@@ -43,12 +43,14 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt',
+    # 'coreapi',
     'managementdataset',
     'managementpacient',
     'managementdoctor.apps.ManagementdoctorConfig',
     'managementhospital',
     'segmentation',
-    'similaritysearch'
+    'similaritysearch',
+    'vectorization'
 ]
 
 MIDDLEWARE = [
