@@ -44,16 +44,15 @@ def segment_image(request):
 
             print('SEGMENTATION FINISHED')
 
+
+            print('INITIALIZING SIMILARITY')
             similarity_checker = ImageSimilarity()
 
-            similarity_checker.calculate_similarity()
-            # # Crear un archivo ZIP con las imágenes segmentadas
-            # zip_buffer = segmenter.create_zip(segmented_images)
+            result = similarity_checker.calculate_similarity(resized_images)
 
-            # # Devolver el archivo ZIP como respuesta HTTP
-            # response = HttpResponse(zip_buffer, content_type='application/zip')
-            # response['Content-Disposition'] = 'attachment; filename="segmented_images.zip"'
-            return HttpResponse("Successful segmentation", status=200)
+            print('SIMILARITY FINISHED')
+
+            return HttpResponse(result, status=200)
         except Exception as e:
             print(e)
             return HttpResponse("Error in segmentation: " + {e}, status=400)

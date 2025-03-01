@@ -86,3 +86,9 @@ class ImgDataset(models.Model):
         if self.descriptors:
             return pickle.loads(zlib.decompress(self.descriptors))
         return None
+    
+    def get_image(self):
+        """
+        Retorna la ruta de la imagen en el sistema de archivos.
+        """
+        return self.image.name

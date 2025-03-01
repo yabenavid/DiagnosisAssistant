@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from .models import ImageSimilarity
+from .models import ImageSimilarityTest
 import os
 
 @csrf_exempt
@@ -17,7 +17,7 @@ def compare_images(request):
         compare_path = default_storage.save("uploads/" + compare_image.name, ContentFile(compare_image.read()))
 
         # Crear una instancia de ImageSimilarity
-        similarity_checker = ImageSimilarity(
+        similarity_checker = ImageSimilarityTest(
             original_image_path=default_storage.path(original_path),
             compare_image_path=default_storage.path(compare_path)
         )
