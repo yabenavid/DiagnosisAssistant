@@ -10,6 +10,7 @@ import ManagementMedical from "./pages/admin/ManagementMedical";
 import ManagementHospital from "./pages/admin/ManagementHospital";
 import Diagnostic from "./pages/diagnostic/Diagnostic";
 import History from "./pages/diagnostic/History";
+import Logout from "./pages/Logout";
 
 // Css
 import "./App.css";
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<Home />} />
           {/* Ruta para el formulario de login */}
           <Route path="/login" element={<LoginForm />} />
+          <Route path="/logout" element={<Logout/>} />
           <Route path="/adminhome" element={<AdminHome />} />
           <Route path="/dataset" element={<ManagementDataSet/>} />
           <Route path="/medical" element={<ManagementMedical/>} />

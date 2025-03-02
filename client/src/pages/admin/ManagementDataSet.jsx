@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 
-import { NavigationBarAdmin, Footer } from '../../components';
+import { NavigationBar, Footer } from "../../components";
 import { handleSelectFolder } from "../../hooks/UploadImages";
 
 //APis
@@ -75,7 +75,7 @@ const ManagementDataSet = () => {
 
     return (
         <div>
-            <NavigationBarAdmin></NavigationBarAdmin>
+            <NavigationBar />
             <div className="count-data-set" >
                 <h3>Cantidad de imagenes en el data Set</h3>
                 <strong>Cantidad: {qtyDataSet}</strong>

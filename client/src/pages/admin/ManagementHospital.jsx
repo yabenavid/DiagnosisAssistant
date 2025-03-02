@@ -1,6 +1,6 @@
 import React, { useEffect, useState, Suspense } from "react";
 import CryptoJS from "crypto-js";
-import { NavigationBarAdmin, Footer } from '../../components';
+import { NavigationBar, Footer } from '../../components';
 import { useTranslation } from "react-i18next";
 
 //Apis
@@ -178,7 +178,7 @@ const ManagementHospital = () => {
   return (
     <Suspense fallback="Cargando Traducciones">
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <NavigationBarAdmin></NavigationBarAdmin>
+      <NavigationBar  />
       <h1>Gestión de Hospitales</h1>
 
       {/* Botones de acción */}

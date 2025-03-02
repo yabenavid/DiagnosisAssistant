@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavigationBarDiagnostic, Footer } from "../../components";
+import { NavigationBar, Footer } from "../../components";
 import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
 
 //APIs
@@ -44,7 +44,7 @@ const Diagnostic = () => {
 
     return (
         <div>
-            <NavigationBarDiagnostic />
+            <NavigationBar />
 
             <div style={{ padding: "20px", textAlign: "center" }}>
                 <h2>Seleccionar Carpeta de Imágenes</h2>

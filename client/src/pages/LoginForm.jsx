@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { data, useNavigate } from "react-router-dom";
+import axios from 'axios'
 
 // Components
 import { HomeCarousel, Footer, NavigationBar } from "../components";
@@ -33,16 +34,30 @@ export function LoginForm() {
         //     console.log("Respuesta del servidor:", response);
 
         //     // Verifica si `response` contiene `data` y `is_admin`
-        //     if (response?.data?.is_admin) {
+        //     if(response?.data?.message){
+        //         alert(response.data.message);
+        //     }else if (response?.data?.is_admin) {
+        //         authorization(response?.data);
         //         navigate("/adminhome");
         //     } else {
-        //         alert("Correo o contraseña inválidos, por favor ingréselos nuevamente.");
+        //         authorization(response?.data);
+        //         navigate("/diagnostic");
         //     }
         // } catch (error) {
         //     console.error("Error en la validación:", error);
         //     alert("Ocurrió un error al validar. Intente nuevamente.");
         // }
     };
+
+    const authorization = (data) => {
+        // Initialize the access & refresh token in localstorage.      
+        localStorage.clear();
+        localStorage.setItem('access_token', data.access);
+        localStorage.setItem('refresh_token', data.refresh);
+        localStorage.setItem('admin', data.is_admin);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${data['access']}`;
+    };
+
 
     return (
         <>

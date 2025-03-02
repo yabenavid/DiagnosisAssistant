@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { NavigationBarDiagnostic, Footer } from '../../components';
+import { NavigationBar, Footer } from '../../components';
 
 function History() {
     return (
         <>
             <div>
-                <NavigationBarDiagnostic></NavigationBarDiagnostic>
+                <NavigationBar />
                 <div class="callout-info">Historial de Diagnostico</div>
                 <Footer></Footer>
             </div>
