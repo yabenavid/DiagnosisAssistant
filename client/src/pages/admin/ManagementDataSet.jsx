@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 
 import { NavigationBar, Footer } from "../../components";
 import { handleSelectFolder } from "../../hooks/UploadImages";
@@ -8,6 +9,7 @@ import { handleSelectFolder } from "../../hooks/UploadImages";
 import { addDataSet, getCountDataSet } from "../../api/admin/dataset.api";
 
 const ManagementDataSet = () => {
+    const navigate = useNavigate();
 
     const [folderName, setFolderName] = useState("");
     const [zipFile, setZipFile] = useState(null);
@@ -15,7 +17,11 @@ const ManagementDataSet = () => {
     const [qtyDataSet, setDatasetCount] = useState(0);
 
     useEffect(() => {
+        if (localStorage.getItem('access_token') === null) {
+            navigate("/login");
+        }else{
         countDataset();
+        }
     });
 
     const topCenter = (message) => {

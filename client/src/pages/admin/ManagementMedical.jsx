@@ -1,4 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js"; // Para encriptar los datos
 import { NavigationBar, Footer } from '../../components';
 
@@ -10,13 +11,15 @@ import { getListHospital } from "../../api/admin/hospital.api"
 
 const DoctorManagement = () => {
 
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     id: "",
     name: "",
     last_name: "",
     second_last_name: "",
     specialism: "",
-    "credential":{
+    "credential": {
       email: "",
       password: ""
     },
@@ -32,8 +35,13 @@ const DoctorManagement = () => {
   const { t: translate } = useTranslation();
 
   useEffect(() => {
-    getList(); 
-    getHospital(); 
+    if (localStorage.getItem('access_token') === null) {
+      navigate("/login");
+    } else {
+      getList();
+      getHospital();
+    }
+
   }, []);
 
   // const hospitals = [
@@ -54,20 +62,20 @@ const DoctorManagement = () => {
 
     // Si el campo pertenece a "credential", actualizarlo correctamente
     if (name === "email" || name === "password") {
-        setFormData((prev) => ({
-            ...prev,
-            credential: {
-                ...prev.credential, // Mantiene los valores anteriores de `credential`
-                [name]: value // Actualiza solo `email` o `password`
-            }
-        }));
+      setFormData((prev) => ({
+        ...prev,
+        credential: {
+          ...prev.credential, // Mantiene los valores anteriores de `credential`
+          [name]: value // Actualiza solo `email` o `password`
+        }
+      }));
     } else {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value // Actualiza los demás campos del formulario
-        }));
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value // Actualiza los demás campos del formulario
+      }));
     }
-};
+  };
 
 
   // Manejar el envío del formulario
@@ -134,7 +142,7 @@ const DoctorManagement = () => {
       last_name: "",
       second_last_name: "",
       specialism: "",
-      "credential":{
+      "credential": {
         email: "",
         password: ""
       },
@@ -171,12 +179,12 @@ const DoctorManagement = () => {
   //Obtener Lista de doctores
   const getList = async () => {
 
-    try{
+    try {
       const response = await getListDoctor();
       console.log(response?.data?.doctors);
       setDoctors(response?.data?.doctors)
 
-    }catch(error){
+    } catch (error) {
       console.error("Error al cargar la lista Hospitales:", error);
       alert("Error al obtener los Hospitales, por favor intente de nuevo.");
     }
@@ -252,7 +260,7 @@ const DoctorManagement = () => {
     );
   };
 
-  
+
   return (
     <Suspense fallback="Cargando Traducciones">
       <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
@@ -299,7 +307,7 @@ const DoctorManagement = () => {
 
             <div style={{ marginBottom: "15px" }}>
               <label>{translate("password")}</label>
-              <input type="password" name="password" value={formData.credential.password} onChange={handleChange}/>
+              <input type="password" name="password" value={formData.credential.password} onChange={handleChange} />
             </div>
 
             <div style={{ marginBottom: "15px" }}>

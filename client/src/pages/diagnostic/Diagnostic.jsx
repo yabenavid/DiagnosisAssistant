@@ -1,11 +1,21 @@
 import React, { useState } from "react";
 import { NavigationBar, Footer } from "../../components";
 import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
+import { useEffect} from "react";
+import { useNavigate } from "react-router-dom";
 
 //APIs
 import { addDataSet } from "../../api/admin/dataset.api";
 
 const Diagnostic = () => {
+    
+    const navigate = useNavigate();
+    useEffect(() => {
+        if (localStorage.getItem('access_token') === null) {
+            navigate("/login");
+        }
+    }, []);
+
     const [folderName, setFolderName] = useState("");
     const [zipFile, setZipFile] = useState(null);
     const [imageCount, setImageCount] = useState(0);

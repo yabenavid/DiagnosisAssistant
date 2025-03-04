@@ -1,4 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
+import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { NavigationBar, Footer } from '../../components';
 import { useTranslation } from "react-i18next";
@@ -7,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { getListHospital, updateHospital, deleteHospital, addHospital } from "../../api/admin/hospital.api";
 
 const ManagementHospital = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -24,7 +26,11 @@ const ManagementHospital = () => {
 
 
   useEffect(() => {
-    getList();
+    if (localStorage.getItem('access_token') === null) {
+      navigate("/login");
+    } else {
+      getList();
+    }
   }, []);
 
   const handleChange = (e) => {
@@ -86,7 +92,7 @@ const ManagementHospital = () => {
 
     // Limpiar el formulario
     setFormData({
-      id:"",
+      id: "",
       name: "",
       address: "",
       phone: ""
@@ -96,24 +102,24 @@ const ManagementHospital = () => {
 
   // Manejar la eliminación de un Hospital
   const handleDelete = async (id) => {
-      const confirmed = window.confirm(translate("deleteregister"));
-  
-      if (confirmed) {
-        try {
-          const response = await deleteHospital(id);
-  
-          if (response?.status === 200) {
-            alert(response?.data?.message);
-  
-          } else {
-            alert(response?.data?.message);
-          }
-        } catch (error) {
-          console.error("Error al eliminar el hospital:", error);
-          alert(translate("errordeleted"));
+    const confirmed = window.confirm(translate("deleteregister"));
+
+    if (confirmed) {
+      try {
+        const response = await deleteHospital(id);
+
+        if (response?.status === 200) {
+          alert(response?.data?.message);
+
+        } else {
+          alert(response?.data?.message);
         }
+      } catch (error) {
+        console.error("Error al eliminar el hospital:", error);
+        alert(translate("errordeleted"));
       }
-    };
+    }
+  };
 
   // Manejar la edición de un hospital
   const handleEdit = (id) => {
@@ -164,59 +170,59 @@ const ManagementHospital = () => {
   };
 
   const getList = async () => {
-     try{
-          const response = await getListHospital();
-          console.log(response?.data?.hospitals);
-          setHospital(response?.data?.hospitals)
-    
-        }catch(error){
-          console.error("Error al cargar la lista Hospitales:", error);
-          alert("Error al obtener los Hospitales, por favor intente de nuevo.");
-        }
+    try {
+      const response = await getListHospital();
+      console.log(response?.data?.hospitals);
+      setHospital(response?.data?.hospitals)
+
+    } catch (error) {
+      console.error("Error al cargar la lista Hospitales:", error);
+      alert("Error al obtener los Hospitales, por favor intente de nuevo.");
+    }
   };
 
   return (
     <Suspense fallback="Cargando Traducciones">
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <NavigationBar  />
-      <h1>Gestión de Hospitales</h1>
+      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+        <NavigationBar />
+        <h1>Gestión de Hospitales</h1>
 
-      {/* Botones de acción */}
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => setShowForm(true)} style={{ marginRight: "10px" }}>
-          Agregar Nuevo Hospital
-        </button>
-        <button onClick={() => setShowForm(false)}>Ver Todos los Hospitales</button>
+        {/* Botones de acción */}
+        <div style={{ marginBottom: "20px" }}>
+          <button onClick={() => setShowForm(true)} style={{ marginRight: "10px" }}>
+            Agregar Nuevo Hospital
+          </button>
+          <button onClick={() => setShowForm(false)}>Ver Todos los Hospitales</button>
+        </div>
+
+        {/* Formulario */}
+        {showForm && (
+          <form onSubmit={handleSubmit} style={{ maxWidth: "400px", margin: "0 auto" }}>
+            <h2>{isEditing ? "Editar Hospital" : "Registrar Nuevo Hospital"}</h2>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>{translate("name")}</label>
+              <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>{translate("address")}</label>
+              <input type="text" name="address" value={formData.address} onChange={handleChange} required />
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>{translate("phone")}</label>
+              <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
+            </div>
+
+            <button type="submit">{isEditing ? "Actualizar" : "Registrar"}</button>
+          </form>
+        )}
+
+        {/* Lista de hospitales */}
+        {!showForm && renderHospitals()}
+        <Footer></Footer>
       </div>
-
-      {/* Formulario */}
-      {showForm && (
-        <form onSubmit={handleSubmit} style={{ maxWidth: "400px", margin: "0 auto" }}>
-          <h2>{isEditing ? "Editar Hospital" : "Registrar Nuevo Hospital"}</h2>
-
-          <div style={{ marginBottom: "15px" }}>
-            <label>{translate("name")}</label>
-            <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-          </div>
-
-          <div style={{ marginBottom: "15px" }}>
-            <label>{translate("address")}</label>
-            <input type="text" name="address" value={formData.address} onChange={handleChange} required />
-          </div>
-
-          <div style={{ marginBottom: "15px" }}>
-            <label>{translate("phone")}</label>
-            <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
-          </div>
-
-          <button type="submit">{isEditing ? "Actualizar" : "Registrar"}</button>
-        </form>
-      )}
-
-      {/* Lista de hospitales */}
-      {!showForm && renderHospitals()}
-      <Footer></Footer>
-    </div>
     </Suspense>
   );
 };
