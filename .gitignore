@@ -1,3 +1,5 @@
 sam_vit_h.pth
 db.sqlite3
 __pycache__
+media
+media/*

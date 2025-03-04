@@ -5,7 +5,6 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .firebase_storage import upload_to_storage, list_files_in_storage, get_images, save_images_to_firebase
 from .models import ImgDataset
 from .serializer import MultipleImageUploadSerializer, ImageDatasetSerializer, ZipImageUploadSerializer
 from rest_framework.decorators import action
@@ -26,48 +25,6 @@ def hello(request, username):
 def about(request):
     a = 1
     return HttpResponse('<h1>About</h1>')
-
-def upload_file_view(request):
-    uploaded_file = request.FILES['file']
-    local_path = f"/tmp/{uploaded_file.name}"  # Ruta temporal
-    with open(local_path, 'wb') as f:
-        for chunk in uploaded_file.chunks():
-            f.write(chunk)
-    
-    # Subir el archivo a Firebase Storage
-    upload_to_storage(local_path, f"uploads/{uploaded_file.name}")
-    return JsonResponse({"status": "Archivo subido exitosamente"})
-
-def list_files_view(request):
-    # Obtener la lista de archivos del bucket
-    file_names = list_files_in_storage()
-    return JsonResponse({"files": file_names})
-
-def show_images(request):
-    # Obtener las URLs de las imágenes de la carpeta específica
-    image_urls = get_images()
-    return JsonResponse({"images": image_urls})
-
-# UPLOAD IN FIREBASE
-# @csrf_exempt
-# def upload_images_view(request):
-#     if request.method == "POST" and request.FILES:
-#         try:
-#             # Obtener todas las imágenes enviadas desde el frontend
-#             images = request.FILES.getlist('images')  # Obtiene la lista de imágenes
-
-#             if not images:
-#                 return JsonResponse({"error": "No se proporcionaron imágenes."}, status=400)
-
-#             # Procesar y guardar las imágenes
-#             image_urls = save_images_to_firebase(images)
-
-#             return JsonResponse({"status": "success", "image_urls": image_urls})
-
-#         except Exception as e:
-#             return JsonResponse({"status": "error", "message": str(e)})
-
-#    return JsonResponse({"error": "Método no permitido."}, status=400)
 
 @authentication_classes([JWTAuthentication])  # JWT Authentication
 @permission_classes([IsAdminUser])        # Only admin users can access

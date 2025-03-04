@@ -7,6 +7,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 from storages.backends.s3boto3 import S3Boto3Storage
 import cv2
+import zlib  # Importar zlib para la compresión
 
 def image_file_name(instance: models.Model, filename: str) -> str:
     return f"dataset/{uuid.uuid4()}.jpg"
@@ -65,7 +66,29 @@ class ImgDataset(models.Model):
                 }
                 serializable_keypoints.append(keypoint_dict)
 
-            # Serializar keypoints y descriptores
-            self.keypoints = pickle.dumps(serializable_keypoints)
-            self.descriptors = pickle.dumps(descriptors)
+            # Serializar y comprimir keypoints y descriptores
+            self.keypoints = zlib.compress(pickle.dumps(serializable_keypoints))
+            self.descriptors = zlib.compress(pickle.dumps(descriptors))
             self.save()
+
+    def get_keypoints(self):
+        """
+        Descomprime y deserializa los keypoints.
+        """
+        if self.keypoints:
+            return pickle.loads(zlib.decompress(self.keypoints))
+        return None
+
+    def get_descriptors(self):
+        """
+        Descomprime y deserializa los descriptores.
+        """
+        if self.descriptors:
+            return pickle.loads(zlib.decompress(self.descriptors))
+        return None
+    
+    def get_image(self):
+        """
+        Retorna la ruta de la imagen en el sistema de archivos.
+        """
+        return self.image.name
