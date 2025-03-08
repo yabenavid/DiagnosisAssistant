@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { data, useNavigate } from "react-router-dom";
-import axios from 'axios'
+import { useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 // Components
 import { HomeCarousel, Footer, NavigationBar } from "../components";
@@ -12,7 +12,7 @@ import "/src/styles/LoginForm.css";
 import { ValidationUser } from "../api/login.api";
 
 export function LoginForm() {
-    const [formData, setFormData] = useState({ email: "", password: "" });
+    const [formData, setFormData] = useState({ username: "", password: "" });
     const navigate = useNavigate();
 
     const handleChange = (e) => {
@@ -26,27 +26,30 @@ export function LoginForm() {
 
         console.log("Formulario enviado:", formData);
         //navigate("/adminhome");
-        navigate("/diagnostic");
-        // try {
-        //     // Llamada a la API
-        //     const response = await ValidationUser(formData);
-            
-        //     console.log("Respuesta del servidor:", response);
+        // navigate("/diagnostic");
+        try {
+            // Llamada a la API
+            const response = await ValidationUser(formData);
 
-        //     // Verifica si `response` contiene `data` y `is_admin`
-        //     if(response?.data?.message){
-        //         alert(response.data.message);
-        //     }else if (response?.data?.is_admin) {
-        //         authorization(response?.data);
-        //         navigate("/adminhome");
-        //     } else {
-        //         authorization(response?.data);
-        //         navigate("/diagnostic");
-        //     }
-        // } catch (error) {
-        //     console.error("Error en la validación:", error);
-        //     alert("Ocurrió un error al validar. Intente nuevamente.");
-        // }
+            console.log("Respuesta del servidor:", response);
+
+            // Verifica si `response` contiene `data` y `is_admin`
+            if (response?.data?.is_admin) {
+                authorization(response?.data);
+                navigate("/adminhome");
+            } else {
+                authorization(response?.data);
+                navigate("/diagnostic");
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                // Maneja el error 401 y muestra el mensaje
+                alert(error.response.data.message);
+            } else {
+                console.error("Error en la validación:", error);
+                alert("Ocurrió un error al validar. Intente nuevamente.");
+            }
+        }
     };
 
     const authorization = (data) => {
@@ -58,7 +61,6 @@ export function LoginForm() {
         axios.defaults.headers.common['Authorization'] = `Bearer ${data['access']}`;
     };
 
-
     return (
         <>
             <div>
@@ -67,15 +69,15 @@ export function LoginForm() {
                     <form className="login-form" onSubmit={handleSubmit}>
                         <h2 className="form-title">Iniciar Sesión</h2>
 
-                        {/* Email */}
+                        {/* username */}
                         <div className="form-group">
-                            <label htmlFor="email">Correo Electrónico</label>
+                            <label htmlFor="username">Correo Electrónico</label>
                             <input
-                                type="email"
-                                id="email"
-                                name="email"
+                                type="username"
+                                id="username"
+                                name="username"
                                 placeholder="Escribe tu correo"
-                                value={formData.email}
+                                value={formData.username}
                                 onChange={handleChange}
                                 required
                             />
