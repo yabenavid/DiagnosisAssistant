@@ -10,14 +10,27 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password']
         extra_kwargs = {
-            'password': {'write_only': True},
+            'password': {'write_only': True, 'required': False, 'allow_blank': True},
             'username': {'required': False},
         }
 
     def validate(self, data):
         if not data.get('username'):
             data['username'] = data.get('email')  # Use email as username
+
+
+        # Validate password required in POST requests
+        if self.context['request'].method == 'POST':
+            if not data.get('password'):
+                raise serializers.ValidationError({"password": "Este campo es obligatorio para la creación de usuarios."})
+
         return data
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation.pop('username', None)
+        representation['password'] = ''
+        return representation
 
 # class CredentialSerializer(serializers.ModelSerializer):
 #     class Meta:
