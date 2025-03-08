@@ -19,7 +19,7 @@ const DoctorManagement = () => {
     last_name: "",
     second_last_name: "",
     specialism: "",
-    "credential": {
+    "user": {
       email: "",
       password: ""
     },
@@ -44,28 +44,18 @@ const DoctorManagement = () => {
 
   }, []);
 
-  // const hospitals = [
-  //   { id: 1, name: "Hospital General" },
-  //   { id: 2, name: "Hospital Clínico" },
-  //   { id: 3, name: "Hospital Central" },
-  // ];
-
   const ENCRYPTION_KEY = "my-secure-key";
 
   // Manejar cambios en el formulario
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setFormData({ ...formData, [name]: value });
-  // };
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    // Si el campo pertenece a "credential", actualizarlo correctamente
+    // Si el campo pertenece a "user", actualizarlo correctamente
     if (name === "email" || name === "password") {
       setFormData((prev) => ({
         ...prev,
-        credential: {
-          ...prev.credential, // Mantiene los valores anteriores de `credential`
+        user: {
+          ...prev.user, // Mantiene los valores anteriores de `user`
           [name]: value // Actualiza solo `email` o `password`
         }
       }));
@@ -85,73 +75,75 @@ const DoctorManagement = () => {
     // Convertir los datos en JSON y encriptarlos
     const jsonData = JSON.stringify(formData);
     const encryptedData = CryptoJS.AES.encrypt(jsonData, ENCRYPTION_KEY).toString();
-    console.log(jsonData);
-    if (isEditing) {
-      // Llamar a la API updateDoctor para actualizar el registro del doctor
-      try {
-        console.log(currentDoctorId);
+    console.log("Data editar: ", jsonData);
+    try {
+      if (isEditing) {
+        // Llamar a la API updateDoctor para actualizar el registro del doctor
+        console.log("Data editar: ", jsonData);
         const response = await updateDoctor(currentDoctorId, jsonData); // Llamado a la API
 
         if (response?.status === 200) {
           alert(response?.data?.message);
 
           // Actualizar la lista de doctores en la UI después de la edición
-          // setDoctors((prev) =>
-          //     prev.map((doctor) =>
-          //         doctor.id === currentDoctorId ? { ...formData, id: currentDoctorId } : doctor
-          //     )
-          // );
           setIsEditing(false);
-          setShowForm(false);
         } else {
           alert(translate("errorupdate"));
         }
-      } catch (error) {
-        console.error("Error al actualizar el doctor:", error);
-        alert(translate("alertupdated"));
-      }
-    } else {
-      // Agregar nuevo doctor (si no está en edición)
-      try {
-
-        console.log(jsonData);
+      } else {
+        // Agregar nuevo doctor (si no está en edición)
         const response = await addDoctor(jsonData);
         if (response?.status === 200) {
-          alert(response?.data?.message)
+          alert(response?.data?.message);
 
           setDoctors((prev) => [
             ...prev,
             {
               ...JSON.parse(CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8)),
               id: prev.length,
-            },
+            }
           ]);
         } else {
           alert(translate("errorregister"));
         }
-      } catch (error) {
+      }
+    } catch (error) {
+      const message = error.response.data.message ?? translate("errorupdate");
+      if (isEditing) {
+        console.error("Error al actualizar el doctor:", error);
+        alert(message);
+      } else {
         console.error("Error al crear el doctor:", error);
-        alert(translate("errorregister"));
+        alert(message);
       }
     }
+    // Ocultar el formulario
+    setShowForm(false); 
 
-    // Limpiar el formulario
+    // Limpiar el formulario y ocultar el formulario
+    cleanFormData();
+
+    // Actualizar la lista de doctores después de agregar/editar
+    await getList(); 
+
+  };
+
+  // Limpiar el formulario
+  const cleanFormData = () => {
+    console.log("Limpiando formulario");
     setFormData({
       id: "",
       name: "",
       last_name: "",
       second_last_name: "",
       specialism: "",
-      "credential": {
+      "user": {
         email: "",
         password: ""
       },
       hospital: ""
     });
-
-    setShowForm(false); // Ocultar el formulario
-  };
-
+  }
 
   // Manejar la eliminación de un doctor
   const handleDelete = async (id) => {
@@ -163,15 +155,13 @@ const DoctorManagement = () => {
 
         if (response?.status === 200) {
           alert(response?.data?.message);
-
-          // Actualizar la lista de doctores después de eliminar
-          //setDoctors((prev) => prev.filter((doctor) => doctor.id !== id));
+          getList();
         } else {
           alert(response?.data?.message);
         }
       } catch (error) {
         console.error("Error al eliminar el doctor:", error);
-        alert(translate("errordeleted"));
+        alert(error.response.data.message);
       }
     }
   };
@@ -205,12 +195,23 @@ const DoctorManagement = () => {
 
   // Manejar la edición de un doctor
   const handleEdit = (id) => {
-    const doctor = listDoctors[id];
-    setFormData(doctor);
-    getHospital();
-    setCurrentDoctorId(id);
-    setIsEditing(true);
-    setShowForm(true); // Mostrar el formulario para edición
+    const doctor = listDoctors.find((doctor) => doctor.id === id);
+    if (doctor) {
+      setFormData(doctor);
+      getHospital();
+      setCurrentDoctorId(id);
+      setIsEditing(true);
+      setShowForm(true); // Mostrar el formulario para edición
+    } else {
+      console.error("Doctor no encontrado");
+    }
+  };
+
+  // Manejar la adición de un nuevo doctor
+  const handleAddNewDoctor = () => {
+    cleanFormData();
+    setIsEditing(false);
+    setShowForm(true);
   };
 
   // Mostrar todos los doctores registrados
@@ -243,7 +244,7 @@ const DoctorManagement = () => {
                   <td>{doctor.last_name}</td>
                   <td>{doctor.second_last_name}</td>
                   <td>{doctor.specialism}</td>
-                  <td>{doctor.credential.email}</td>
+                  <td>{doctor.user.email}</td>
                   <td>{hospitals.find((h) => h.id === parseInt(doctor.hospital))?.name}</td>
                   <td>
                     <button onClick={() => handleEdit(doctor.id)} style={{ marginRight: "10px" }}>
@@ -260,7 +261,6 @@ const DoctorManagement = () => {
     );
   };
 
-
   return (
     <Suspense fallback="Cargando Traducciones">
       <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
@@ -269,7 +269,7 @@ const DoctorManagement = () => {
 
         {/* Botones de acción */}
         <div style={{ marginBottom: "20px" }}>
-          <button onClick={() => setShowForm(true)} style={{ marginRight: "10px" }}>
+          <button onClick={handleAddNewDoctor} style={{ marginRight: "10px" }}>
             Agregar Nuevo Doctor
           </button>
           <button onClick={() => setShowForm(false)}>Ver Todos los Doctores</button>
@@ -302,12 +302,12 @@ const DoctorManagement = () => {
 
             <div style={{ marginBottom: "15px" }}>
               <label>{translate("email")}</label>
-              <input type="email" name="email" value={formData.credential.email} onChange={handleChange} required />
+              <input type="email" name="email" value={formData.user.email} onChange={handleChange} required />
             </div>
 
             <div style={{ marginBottom: "15px" }}>
               <label>{translate("password")}</label>
-              <input type="password" name="password" value={formData.credential.password} onChange={handleChange} />
+              <input type="password" name="password" value={formData.user.password} onChange={handleChange} />
             </div>
 
             <div style={{ marginBottom: "15px" }}>

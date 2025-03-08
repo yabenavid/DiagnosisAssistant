@@ -7,6 +7,10 @@ import { useTranslation } from "react-i18next";
 //Apis
 import { getListHospital, updateHospital, deleteHospital, addHospital } from "../../api/admin/hospital.api";
 
+/**
+ * Componente para la gestión de hospitales.
+ * Permite agregar, editar y eliminar hospitales.
+ */
 const ManagementHospital = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -24,7 +28,6 @@ const ManagementHospital = () => {
 
   const ENCRYPTION_KEY = "my-secure-key";
 
-
   useEffect(() => {
     if (localStorage.getItem('access_token') === null) {
       navigate("/login");
@@ -33,11 +36,19 @@ const ManagementHospital = () => {
     }
   }, []);
 
+  /**
+   * Maneja los cambios en el formulario.
+   * @param {Object} e - Evento de cambio.
+   */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
+  /**
+   * Maneja el envío del formulario.
+   * @param {Object} e - Evento de envío.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -45,35 +56,23 @@ const ManagementHospital = () => {
     const jsonData = JSON.stringify(formData);
     const encryptedData = CryptoJS.AES.encrypt(jsonData, ENCRYPTION_KEY).toString();
 
-    if (isEditing) {
-      try {
+    try {
+      // Editando un Hospital
+      if (isEditing) {
         const response = await updateHospital(currentHospitalId, formData); // Llamado a la API
 
         if (response?.status === 200) {
           alert(response?.data?.message);
-          // Actualizar registro existente
-          // setHospital((prev) =>
-          //   prev.map((hospital, index) =>
-          //     index === currentHospitalId
-          //       ? { ...JSON.parse(CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8)), id: index }
-          //       : hospital
-          //   )
-          // );
           setIsEditing(false);
-          setShowForm(false);
+
         } else {
           alert(translate("errorupdate"));
         }
-      } catch (error) {
-        console.error("Error al actualizar el hospital:", error);
-        alert(translate("alertupdated"));
-      }
-    } else {
-      try {
+      } else {
+        // Agregando un nuevo Hospital
         const response = await addHospital(jsonData);
         if (response?.status === 200) {
           alert(response?.data?.message)
-          // Agregar nuevo registro
           setHospital((prev) => [
             ...prev,
             {
@@ -84,23 +83,43 @@ const ManagementHospital = () => {
         } else {
           alert(translate("errorregister"));
         }
-      } catch (error) {
-        console.error("Error al crear el hospital:", error);
-        alert(translate("errorregister"));
+      }
+    } catch (error) {
+      const message = error.response.data.message ?? translate("errorupdate");
+      if (isEditing) {
+        console.error("Error al actualizar el Hospital:", error);
+        alert(message);
+      } else {
+        console.error("Error al crear el Hospital:", error);
+        alert(message);
       }
     }
+    // Ocultar el formulario
+    setShowForm(false);
 
-    // Limpiar el formulario
+    // Limpiar el formulario y ocultar el formulario
+    cleanFormData();
+
+    // Actualizar la lista de doctores después de agregar/editar
+    getList();
+  };
+
+  /**
+   * Limpia el formulario.
+   */
+  const cleanFormData = () => {
     setFormData({
       id: "",
       name: "",
       address: "",
       phone: ""
     });
-    setShowForm(false); // Ocultar el formulario
   };
 
-  // Manejar la eliminación de un Hospital
+  /**
+   * Maneja la eliminación de un hospital.
+   * @param {number} id - ID del hospital a eliminar.
+   */
   const handleDelete = async (id) => {
     const confirmed = window.confirm(translate("deleteregister"));
 
@@ -110,6 +129,7 @@ const ManagementHospital = () => {
 
         if (response?.status === 200) {
           alert(response?.data?.message);
+          getList();
 
         } else {
           alert(response?.data?.message);
@@ -121,16 +141,35 @@ const ManagementHospital = () => {
     }
   };
 
-  // Manejar la edición de un hospital
+  /**
+   * Maneja la edición de un hospital.
+   * @param {number} id - ID del hospital a editar.
+   */
   const handleEdit = (id) => {
-    const hospital = hospitales[id];
-    setFormData(hospital);
-    setCurrentHospitalId(id);
-    setIsEditing(true);
-    setShowForm(true); // Mostrar el formulario para edición
+    const hospital = hospitales.find((hospital) => hospital.id === id);
+    if (hospital) {
+      setFormData(hospital);
+      setCurrentHospitalId(id);
+      setIsEditing(true);
+      setShowForm(true); // Mostrar el formulario para edición
+    } else {
+      console.error("Hospital no encontrado");
+    }
   };
 
-  // Mostrar todos los Hospitales registrados
+  /**
+   * Maneja la adición de un nuevo hospital.
+   */
+  const handleAddNewHospital = () => {
+    cleanFormData();
+    setIsEditing(false);
+    setShowForm(true);
+  };
+
+  /**
+   * Muestra todos los hospitales registrados.
+   * @returns {JSX.Element} - Tabla con la lista de hospitales.
+   */
   const renderHospitals = () => {
     return (
       <div style={{ marginTop: "20px" }}>
@@ -169,6 +208,9 @@ const ManagementHospital = () => {
     );
   };
 
+  /**
+   * Obtiene la lista de hospitales.
+   */
   const getList = async () => {
     try {
       const response = await getListHospital();
@@ -189,7 +231,7 @@ const ManagementHospital = () => {
 
         {/* Botones de acción */}
         <div style={{ marginBottom: "20px" }}>
-          <button onClick={() => setShowForm(true)} style={{ marginRight: "10px" }}>
+          <button onClick={handleAddNewHospital} style={{ marginRight: "10px" }}>
             Agregar Nuevo Hospital
           </button>
           <button onClick={() => setShowForm(false)}>Ver Todos los Hospitales</button>
@@ -226,6 +268,5 @@ const ManagementHospital = () => {
     </Suspense>
   );
 };
-
 
 export default ManagementHospital;

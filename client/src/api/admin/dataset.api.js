@@ -1,13 +1,16 @@
 import axios from 'axios';
+import { getAuthHeaders } from '../../hooks/Authorization';
 
 const dataSetApi = axios.create({
-    //baseURL: 'https://diagnostico.free.beeceptor.com/dataset',
-    baseURL: 'https://7bc9b5a9-ac63-4468-87cc-13e8f48b27d6.mock.pstmn.io/dataset/',
-    headers: {
-        "Content-Type": "multipart/form-data"
-    }
+    baseURL: 'http://127.0.0.1:8000/api/v1/datasets/images/',
+    ...getAuthHeaders()
+});
+
+const dataSetCount = axios.create({
+    baseURL: 'http://127.0.0.1:8000/api/v1/datasets/count/',
+    ...getAuthHeaders()
 });
 
 export const addDataSet = (data) => dataSetApi.post("/", data);
 
-export const getCountDataSet = () => dataSetApi.get("/");
+export const getCountDataSet = () => dataSetCount.get("/");

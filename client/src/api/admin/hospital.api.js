@@ -1,7 +1,9 @@
 import axios from 'axios'
+import { getAuthHeaders, getAuthHeadersJson } from '../../hooks/Authorization';
+
 const hospitalApi = axios.create({
-    //baseURL: 'https://diagnostico.free.beeceptor.com/hospital'
-    baseURL: 'https://7bc9b5a9-ac63-4468-87cc-13e8f48b27d6.mock.pstmn.io/hospital/'
+     baseURL: 'http://127.0.0.1:8000/api/v1/hospitals',
+     ...getAuthHeadersJson()
 })
 
 export const getListHospital = () => hospitalApi.get("/");

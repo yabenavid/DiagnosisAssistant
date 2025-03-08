@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { NavigationBarAdmin, Footer } from '../../components';
+import { NavigationBar, Footer } from '../../components';
 import { useEffect} from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -13,13 +13,14 @@ function AdminHome() {
             navigate("/login");
         }
     }, []);
+
     return (
         <>
             
             <div>
-                <NavigationBarAdmin></NavigationBarAdmin>
-                <div class="callout-info">Bienvenido a la Gestion de Administrador</div>
-                <Footer></Footer>
+                <NavigationBar />
+                <div className="callout-info">Bienvenido a la Gestion de Administrador</div>
+                <Footer />
             </div>
 
         </>

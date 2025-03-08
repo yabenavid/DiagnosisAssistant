@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 
@@ -19,10 +19,10 @@ const ManagementDataSet = () => {
     useEffect(() => {
         if (localStorage.getItem('access_token') === null) {
             navigate("/login");
-        }else{
-        countDataset();
+        } else {
+            countDataset();
         }
-    });
+    }, []);
 
     const topCenter = (message) => {
         toast.info(message, {
@@ -40,7 +40,7 @@ const ManagementDataSet = () => {
         }
 
         const formData = new FormData();
-        formData.append("file", zipFile, `${folderName}.zip`);
+        formData.append("zip_file", zipFile, `${folderName}.zip`);
 
         try {
             const response = await addDataSet(formData);
@@ -54,16 +54,17 @@ const ManagementDataSet = () => {
                 setZipFile(null);
                 setImageCount(0);
             } else {
-                toast.error(response?.data?.message || "Ocurrió un error", {
-                    position: "top-right",
-                    autoClose: 5000, // Se cierra en 5 segundos
-                });
+                // toast.error(response?.data?.message || "Ocurrió un error", {
+                //     position: "top-right",
+                //     autoClose: 5000, // Se cierra en 5 segundos
+                // });
+                alert(response.data.message);
             }
 
             console.log("Respuesta del servidor:", response.data);
         } catch (error) {
             console.error("Error al subir la carpeta:", error);
-            alert("Error al subir la carpeta.");
+            alert(error.response.data.message);
         }
     };
 
@@ -71,7 +72,7 @@ const ManagementDataSet = () => {
     const countDataset = async () => {
         try {
             const response = await getCountDataSet();
-            setDatasetCount(response?.data?.count);
+            setDatasetCount(response?.data);
 
         } catch (error) {
             console.error("Error al subir la carpeta:", error);
@@ -80,28 +81,31 @@ const ManagementDataSet = () => {
     };
 
     return (
-        <div>
-            <NavigationBar />
-            <div className="count-data-set" >
-                <h3>Cantidad de imagenes en el data Set</h3>
-                <strong>Cantidad: {qtyDataSet}</strong>
+        <Suspense fallback="Cargando Traducciones">
+            <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+                <NavigationBar />
+                <h1>Gestión de Doctores</h1>
+                <div className="count-data-set">
+                    <h3>Cantidad de imagenes en el data Set</h3>
+                    <strong>Cantidad: {qtyDataSet}</strong>
+                </div>
+
+                <div style={{ padding: "20px", textAlign: "center" }}>
+                    <h2>Seleccionar Carpeta de Imágenes</h2>
+                    <button onClick={() => handleSelectFolder(setFolderName, setImageCount, setZipFile)}>
+                        Seleccionar Carpeta
+                    </button>
+
+                    {folderName && <p>📁 Carpeta seleccionada: <strong>{folderName}</strong></p>}
+                    {imageCount > 0 && <p>📷 Imágenes encontradas: <strong>{imageCount}</strong></p>}
+
+                    <button onClick={handleUpload} disabled={!zipFile} style={{ marginTop: "10px" }}>
+                        Subir DataSet
+                    </button>
+                </div>
+                <Footer />
             </div>
-
-            <div style={{ padding: "20px", textAlign: "center" }}>
-                <h2>Seleccionar Carpeta de Imágenes</h2>
-                <button onClick={() => handleSelectFolder(setFolderName, setImageCount, setZipFile)}>
-                    Seleccionar Carpeta
-                </button>
-
-                {folderName && <p>📁 Carpeta seleccionada: <strong>{folderName}</strong></p>}
-                {imageCount > 0 && <p>📷 Imágenes encontradas: <strong>{imageCount}</strong></p>}
-
-                <button onClick={handleUpload} disabled={!zipFile} style={{ marginTop: "10px" }}>
-                    Subir DataSet
-                </button>
-            </div>
-            <Footer></Footer>
-        </div>
+        </Suspense>
     );
 };
 
