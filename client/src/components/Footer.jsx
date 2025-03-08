@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/Footer.css'; // 🔥 Importar los estilos
+import '../styles/Footer.css';
 
 function Footer() {
     return (
@@ -39,7 +39,7 @@ function Footer() {
                     </div>
 
                     <div className="footer-bottom text-center">
-                        <p>&copy; {new Date().getFullYear()} My Website. Todos los derechos reservados.</p>
+                        <p>&copy; {new Date().getFullYear()} Universidad del Cauca. Todos los derechos reservados</p>
                     </div>
                 </div>
             </footer>
