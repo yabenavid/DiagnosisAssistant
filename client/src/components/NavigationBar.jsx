@@ -4,7 +4,9 @@ import { Outlet, Link } from "react-router-dom";
 import '../styles/NavigationBar.css';
 
 function NavigationBar() {
-    const [isAuth, setIsAuth, isAdmin, setIsAdmin] = useState(false);
+    const [isAuth, setIsAuth] = useState(false);
+
+    const [ isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         if (localStorage.getItem('access_token') !== null) {
