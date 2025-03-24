@@ -13,10 +13,18 @@ from segment_anything import sam_model_registry, SamAutomaticMaskGenerator
 class SamImageSegmenter:
     def __init__(self):
         # Load SAM model
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
         sam_checkpoint = "sam_vit_h.pth"
         model_type = "vit_h"
+        
+        # Carga el modelo en CPU primero
         self.sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-        self.sam.to(device="cuda" if torch.cuda.is_available() else "cpu")
+        self.sam.to(device=self.device)  # Mueve a CUDA aquí
+        
+        # Opcional: Limpia la caché de CUDA
+        if self.device == "cuda":
+            torch.cuda.empty_cache()
+            
         self.mask_generator = SamAutomaticMaskGenerator(self.sam)
 
     def segment_images(self, image_files, image_path = None):
