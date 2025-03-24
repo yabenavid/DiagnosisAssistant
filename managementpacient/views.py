@@ -2,7 +2,7 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from segmentation.models import SamImageSegmenter
-from similaritysearch.models import ImageSimilarity
+from similaritysearch.models import ImageSimilarity, ImageSimilarityResNet
 from vectorization.models import ImageResizer
 
 @csrf_exempt
@@ -18,7 +18,6 @@ def segment_image(request):
 
             if segment_model is None:
                 return HttpResponse("segment_model parameter is missing", status=400)
-
 
             print('INITIALIZING VECTORIZATION')
 
@@ -46,9 +45,10 @@ def segment_image(request):
 
 
             print('INITIALIZING SIMILARITY')
-            similarity_checker = ImageSimilarity()
+            # similarity_checker = ImageSimilarity()
+            similarity_checker_resnet = ImageSimilarityResNet()
 
-            result = similarity_checker.calculate_similarity(resized_images)
+            result = similarity_checker_resnet.calculate_similarity(segmented_images)
 
             print('SIMILARITY FINISHED')
 
