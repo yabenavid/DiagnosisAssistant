@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from managementdataset.models import ImgDataset
 from managementdataset.utils import get_images_from_s3, get_all_images_from_s3
-from .utils import calculate_average, image_to_base64, analyze_image
+from .utils import calculate_average, image_to_base64, analyze_image, analyze_image2, get_diagnosis_message
 
 class ImageSimilarity:
     def __init__(self):
@@ -219,15 +219,17 @@ class ImageSimilarityResNet:
                 similarity_percentage = self.calculate_cosine_similarity(pacient_features, dataset_features)
 
                 percentage_similarity_by_pacient.append(similarity_percentage)
-            
+
             average_pacient_similarity = calculate_average(percentage_similarity_by_pacient)
             pacient_image_base64 = image_to_base64(pacient_image_data)
-            # diagnosis_message = analyze_image(default_storage.path(pacient_image.name))
+            diagnosis_message = get_diagnosis_message(average_pacient_similarity/100)
+            print(">>Diagnosis message: ", diagnosis_message)
+            
             results.append(
                 {
                     "average_similarity_percentage": average_pacient_similarity,
+                    "diagnosis_message": diagnosis_message,
                     "pacient_image": pacient_image_base64
-                    # "diagnosis_message": diagnosis_message
                 }
             )
 
