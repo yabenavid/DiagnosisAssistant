@@ -1,10 +1,16 @@
 # models.py
+from PIL import Image
 import cv2
 import numpy as np
 import os
+import torch
+import torchvision.models as models
+import torchvision.transforms as transforms
 from django.conf import settings
+from django.core.files.storage import default_storage
 from managementdataset.models import ImgDataset
-from managementdataset.utils import get_images_from_s3
+from managementdataset.utils import get_images_from_s3, get_all_images_from_s3
+from .utils import calculate_average, image_to_base64, analyze_image, analyze_image2, get_diagnosis_message
 
 class ImageSimilarity:
     def __init__(self):
@@ -144,6 +150,102 @@ class ImageSimilarity:
                     )
 
         return results
+
+class ImageSimilarityResNet:
+    def __init__(self):
+        # Cargar el modelo preentrenado de ResNet
+        self.model = models.resnet18(weights='IMAGENET1K_V1')
+        self.model.eval()
+        
+        # Definir las transformaciones para las imágenes
+        self.transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+    def calculate_similarity(self, pacient_images):
+        """
+        Calcula la similitud entre las imágenes proporcionadas y las imágenes almacenadas en la base de datos.
+        Utiliza ResNet para calcular las similitudes.
+        """
+        results = []
+
+        # Obtener las imágenes de la base de datos
+        print(">>Getting images from S3")
+        dataset_images_from_s3 = get_all_images_from_s3()
+
+        for pacient_image in pacient_images:
+
+            percentage_similarity_by_pacient = []
+
+            # Leer la imagen del paciente
+            print(">>Reading pacient image")
+            pacient_image_data = cv2.imdecode(
+                np.frombuffer(pacient_image.read(), np.uint8), cv2.IMREAD_COLOR
+            )
+
+            # Convertir la imagen de NumPy a PIL
+            pacient_image_pil = Image.fromarray(cv2.cvtColor(pacient_image_data, cv2.COLOR_BGR2RGB))
+
+            # Transformar la imagen segmentada
+            print(">>Transforming image")
+            pacient_image_tensor = self.transform(pacient_image_pil).unsqueeze(0)
+
+            # Extraer características con ResNet
+            print(">>Extracting features")
+            with torch.no_grad():
+                pacient_features = self.model(pacient_image_tensor).numpy()
+
+            for data_dataset in dataset_images_from_s3:
+                # Leer la imagen de la base de datos desde el diccionario
+                print(">>Reading dataset image")
+                dataset_image = data_dataset['image']
+
+                # Convertir la imagen de NumPy a PIL
+                dataset_image_pil = Image.fromarray(cv2.cvtColor(dataset_image, cv2.COLOR_BGR2RGB))
+
+                # Transformar la imagen segmentada
+                print(">>Transforming image")
+                dataset_image_tensor = self.transform(dataset_image_pil).unsqueeze(0)
+
+                # Extraer características con ResNet
+                print(">>Extracting features")
+                with torch.no_grad():
+                    dataset_features = self.model(dataset_image_tensor).numpy()
+
+                # Calcular la similitud entre las características
+                print(">>Calculating similarity")
+                similarity_percentage = self.calculate_cosine_similarity(pacient_features, dataset_features)
+
+                percentage_similarity_by_pacient.append(similarity_percentage)
+
+            average_pacient_similarity = calculate_average(percentage_similarity_by_pacient)
+            pacient_image_base64 = image_to_base64(pacient_image_data)
+            diagnosis_message = get_diagnosis_message(average_pacient_similarity/100)
+            print(">>Diagnosis message: ", diagnosis_message)
+            
+            results.append(
+                {
+                    "average_similarity_percentage": average_pacient_similarity,
+                    "diagnosis_message": diagnosis_message,
+                    "pacient_image": pacient_image_base64
+                }
+            )
+
+        return results
+
+    def calculate_cosine_similarity(self, features1, features2):
+        """
+        Calcula la similitud coseno entre dos vectores de características.
+        """
+        print(">>Calculating cosine similarity")
+        dot_product = np.dot(features1, features2.T)
+        norm1 = np.linalg.norm(features1)
+        norm2 = np.linalg.norm(features2)
+        similarity = dot_product / (norm1 * norm2)
+        print(similarity * 100)
+        return similarity * 100
 
 class ImageSimilarityTest:
     def __init__(self, original_image_path, compare_image_path):

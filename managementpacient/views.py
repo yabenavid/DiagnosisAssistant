@@ -2,7 +2,8 @@
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from segmentation.models import SamImageSegmenter
-from similaritysearch.models import ImageSimilarity
+from segmentation.apps import segmenter_instance
+from similaritysearch.models import ImageSimilarity, ImageSimilarityResNet
 from vectorization.models import ImageResizer
 
 @csrf_exempt
@@ -19,7 +20,6 @@ def segment_image(request):
             if segment_model is None:
                 return HttpResponse("segment_model parameter is missing", status=400)
 
-
             print('INITIALIZING VECTORIZATION')
 
             # Procesar las imágenes usando pyvips para estandarizarlas y mejorar su calidad
@@ -32,13 +32,13 @@ def segment_image(request):
             print('INITIALIZING SEGMENTATION')
 
             if (segment_model == '1'):
-                print('Cargando modelo de sam')
-                segmenter = SamImageSegmenter()
-                print('Segmentando')
-                segmented_images = segmenter.segment_images(resized_images)
-            elif (segment_model == '2'):
-                segmenter = SamImageSegmenter()
-                segmented_images = segmenter.segment_images(resized_images, image_path = 'uploads/imagen.jpg')
+                # print('Cargando modelo de sam')
+                # segmenter = SamImageSegmenter()
+                # print('Segmentando')
+                # segmented_images = segmenter.segment_images(resized_images)
+
+                print('Usando modelo SAM pre-cargado')
+                segmented_images = segmenter_instance.segment_images(resized_images)
             else:
                 return HttpResponse("Invalid segmentation model param", status=400)
 
@@ -46,9 +46,10 @@ def segment_image(request):
 
 
             print('INITIALIZING SIMILARITY')
-            similarity_checker = ImageSimilarity()
+            # similarity_checker = ImageSimilarity()
+            similarity_checker_resnet = ImageSimilarityResNet()
 
-            result = similarity_checker.calculate_similarity(resized_images)
+            result = similarity_checker_resnet.calculate_similarity(segmented_images)
 
             print('SIMILARITY FINISHED')
 
