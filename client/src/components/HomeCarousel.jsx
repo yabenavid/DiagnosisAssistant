@@ -1,13 +1,14 @@
-import { useState } from 'react'
-import GeneralImage from '../assets/fiet.png'
-import DoctorImage from '../assets/doctor.jpg'
-import StomachImage from '../assets/stomach.jpg'
-
+import { useState } from 'react';
+import GeneralImage from '../assets/fiet.png';
+import FietImage from '../assets/banner4.png';
+import FacultadImage from '../assets/banner3.png';
+import '../styles/Home.css';
 
 export function HomeCarousel() {
   return (
     <>
-      <div id="carouselExampleCaptions" className="carousel slide" data-bs-ride="carousel">
+    
+      <div id="carouselExampleCaptions" className="carousel slide w-100 vw-100 overflow-hidden" data-bs-ride="carousel">
         <div className="carousel-indicators">
           <button
             type="button"
@@ -34,35 +35,35 @@ export function HomeCarousel() {
           <div className="carousel-item active">
             <img
               src={GeneralImage}
-              className="d-block w-100"
+              className="d-block w-100 img-fluid"
               alt="Slide 1"
             />
-            <div className="carousel-caption d-none d-md-block">
-              <h5>First Slide</h5>
-              <p>This is the first slide's description.</p>
-            </div>
+            {/* <div className="carousel-caption d-none d-md-block">
+              <h5>FIET</h5>
+              <p>60 Años</p>
+            </div> */}
           </div>
           <div className="carousel-item">
             <img
-              src={DoctorImage}
-              className="d-block w-100"
+              src={FietImage}
+              className="d-block w-100 img-fluid"
               alt="Slide 2"
             />
-            <div className="carousel-caption d-none d-md-block">
-              <h5>Second Slide</h5>
-              <p>This is the second slide's description.</p>
-            </div>
+            {/* <div className="carousel-caption d-none d-md-block">
+              <h5>FIET</h5>
+              <p>Facultad de Ingeniería Electrónica y Telecomunicaciones</p>
+            </div> */}
           </div>
           <div className="carousel-item">
             <img
-              src={StomachImage}
-              className="d-block w-100"
+              src={FacultadImage}
+              className="d-block w-100 img-fluid"
               alt="Slide 3"
             />
-            <div className="carousel-caption d-none d-md-block">
-              <h5>Third Slide</h5>
-              <p>This is the third slide's description.</p>
-            </div>
+            {/* <div className="carousel-caption d-none d-md-block">
+              <h5>Universidad del Cauca</h5>
+              <p>Territorio de Paz</p>
+            </div> */}
           </div>
         </div>
         <button
@@ -85,7 +86,7 @@ export function HomeCarousel() {
         </button>
       </div>
     </>
-  )
+  );
 }
 
-export default HomeCarousel
+export default HomeCarousel;

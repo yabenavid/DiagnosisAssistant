@@ -1,7 +1,128 @@
-.callout-info{
+.callout-info {
     background-color: #C2CFD9;
     padding-top: 50%;
     margin-top: 3%;
     margin-bottom: 3%;
 }
+
 /* Todo: agregar estilos de: count-data-set en nuevo archivo solo para el dataset */
+
+.admin-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: #f5f7fa;
+}
+
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-container {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 2rem auto 0 auto;
+    width: 100%;
+}
+
+.welcome-banner {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    border-left: 5px solid #9155a7;
+}
+
+.welcome-banner h2 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.welcome-banner p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    padding: 1rem;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--card-color);
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.admin-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--card-color);
+}
+
+.card-icon {
+    color: var(--card-color);
+    margin-bottom: 1rem;
+}
+
+.admin-card h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.admin-card p {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+.logout-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+}

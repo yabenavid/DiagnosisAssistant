@@ -3,6 +3,10 @@ import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js"; // Para encriptar los datos
 import { NavigationBar, Footer } from '../../components';
 
+import { FaEdit, FaPlus, FaList } from 'react-icons/fa';
+import { FcDeleteRow, FcTodoList, FcPlus } from "react-icons/fc";
+import '/src/styles/admin/Management.css';
+
 import { useTranslation } from "react-i18next";
 
 //Apis
@@ -118,13 +122,13 @@ const DoctorManagement = () => {
       }
     }
     // Ocultar el formulario
-    setShowForm(false); 
+    setShowForm(false);
 
     // Limpiar el formulario y ocultar el formulario
     cleanFormData();
 
     // Actualizar la lista de doctores después de agregar/editar
-    await getList(); 
+    await getList();
 
   };
 
@@ -223,39 +227,52 @@ const DoctorManagement = () => {
         {listDoctors.length === 0 ? (
           <p>No hay doctores registrados.</p>
         ) : (
-          <table border="1" style={{ width: "100%", textAlign: "left" }}>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Segundo Apellido</th>
-                <th>Especialidad</th>
-                <th>Email</th>
-                <th>Hospital</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {listDoctors.map((doctor, index) => (
-                <tr key={index}>
-                  <td>{doctor.id}</td>
-                  <td>{doctor.name}</td>
-                  <td>{doctor.last_name}</td>
-                  <td>{doctor.second_last_name}</td>
-                  <td>{doctor.specialism}</td>
-                  <td>{doctor.user.email}</td>
-                  <td>{hospitals.find((h) => h.id === parseInt(doctor.hospital))?.name}</td>
-                  <td>
-                    <button onClick={() => handleEdit(doctor.id)} style={{ marginRight: "10px" }}>
-                      Editar
-                    </button>
-                    <button onClick={() => handleDelete(doctor.id)}>Eliminar</button>
-                  </td>
+          <div className="table-responsive">
+            <table border="1" style={{ width: "100%", textAlign: "left" }}>
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Nombre</th>
+                  <th>Apellido</th>
+                  <th>Segundo Apellido</th>
+                  <th>Especialidad</th>
+                  <th>Email</th>
+                  <th>Hospital</th>
+                  <th>Acción</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {listDoctors.map((doctor, index) => (
+                  <tr key={index}>
+                    <td>{doctor.id}</td>
+                    <td>{doctor.name}</td>
+                    <td>{doctor.last_name}</td>
+                    <td>{doctor.second_last_name}</td>
+                    <td>{doctor.specialism}</td>
+                    <td>{doctor.user.email}</td>
+                    <td>{hospitals.find((h) => h.id === parseInt(doctor.hospital))?.name}</td>
+                    <td>
+                      {/* Botón de editar con tooltip */}
+                      <div className="tooltip-container">
+                        <button onClick={() => handleEdit(doctor.id)} style={{ marginRight: "10px" }}>
+                          <FaEdit />
+                        </button>
+                        <span className="tooltip-text">Editar registro</span>
+                      </div>
+
+                      {/* Botón de eliminar con tooltip */}
+                      <div className="tooltip-container">
+                        <button onClick={() => handleDelete(doctor.id)}>
+                          <FcDeleteRow />
+                        </button>
+                        <span className="tooltip-text">Eliminar registro</span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     );
@@ -268,11 +285,9 @@ const DoctorManagement = () => {
         <h1>Gestión de Doctores</h1>
 
         {/* Botones de acción */}
-        <div style={{ marginBottom: "20px" }}>
-          <button onClick={handleAddNewDoctor} style={{ marginRight: "10px" }}>
-            Agregar Nuevo Doctor
-          </button>
-          <button onClick={() => setShowForm(false)}>Ver Todos los Doctores</button>
+        <div className="action-buttons">
+          <button onClick={handleAddNewDoctor} style={{ marginRight: "10px" }}><FaPlus /> Agregar </button>
+          <button onClick={() => setShowForm(false)}><FaList /> Ver Todos </button>
         </div>
 
         {/* Formulario */}
@@ -281,12 +296,16 @@ const DoctorManagement = () => {
             <h2>{isEditing ? "Editar Doctor" : "Registrar Nuevo Doctor"}</h2>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("name")}</label>
+              <label>
+                {translate("name")} <span className="required">*</span>
+              </label>
               <input type="text" name="name" value={formData.name} onChange={handleChange} required />
             </div>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("lasname")}</label>
+              <label>
+                {translate("lasname")} <span className="required">*</span>
+              </label>
               <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} required />
             </div>
 
@@ -296,12 +315,16 @@ const DoctorManagement = () => {
             </div>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("specialism")}</label>
+              <label>
+                {translate("specialism")} <span className="required">*</span>
+              </label>
               <input type="text" name="specialism" value={formData.specialism} onChange={handleChange} required />
             </div>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("email")}</label>
+              <label>
+                {translate("email")} <span className="required">*</span>
+              </label>
               <input type="email" name="email" value={formData.user.email} onChange={handleChange} required />
             </div>
 
@@ -311,7 +334,9 @@ const DoctorManagement = () => {
             </div>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("hospital")}</label>
+              <label>
+                {translate("hospital")} <span className="required">*</span>
+              </label>
               <select name="hospital" value={formData.hospital} onChange={handleChange} required>
                 <option value="">{translate("selectedhospital")}</option>
                 {hospitals.map((hospital) => (
@@ -328,8 +353,8 @@ const DoctorManagement = () => {
 
         {/* Lista de doctores */}
         {!showForm && renderDoctors()}
-        <Footer></Footer>
       </div>
+      <Footer />
     </Suspense>
   );
 };

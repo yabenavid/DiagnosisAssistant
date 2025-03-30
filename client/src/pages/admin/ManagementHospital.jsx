@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import CryptoJS from "crypto-js";
 import { NavigationBar, Footer } from '../../components';
 import { useTranslation } from "react-i18next";
+import { FaEdit, FaPlus, FaList } from 'react-icons/fa';
+import '/src/styles/admin/Management.css';
 
 //Apis
 import { getListHospital, updateHospital, deleteHospital, addHospital } from "../../api/admin/hospital.api";
@@ -230,11 +232,9 @@ const ManagementHospital = () => {
         <h1>Gestión de Hospitales</h1>
 
         {/* Botones de acción */}
-        <div style={{ marginBottom: "20px" }}>
-          <button onClick={handleAddNewHospital} style={{ marginRight: "10px" }}>
-            Agregar Nuevo Hospital
-          </button>
-          <button onClick={() => setShowForm(false)}>Ver Todos los Hospitales</button>
+        <div className="action-buttons">
+          <button onClick={handleAddNewHospital} style={{ marginRight: "10px" }}><FaPlus /> Agregar</button>
+          <button onClick={() => setShowForm(false)}><FaList />  Ver Todos</button>
         </div>
 
         {/* Formulario */}
@@ -243,17 +243,24 @@ const ManagementHospital = () => {
             <h2>{isEditing ? "Editar Hospital" : "Registrar Nuevo Hospital"}</h2>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("name")}</label>
+              <label>
+                {translate("name")}<span className="required">*</span>
+
+              </label>
               <input type="text" name="name" value={formData.name} onChange={handleChange} required />
             </div>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("address")}</label>
+              <label>
+                {translate("address")}<span className="required">*</span>
+                </label>
               <input type="text" name="address" value={formData.address} onChange={handleChange} required />
             </div>
 
             <div style={{ marginBottom: "15px" }}>
-              <label>{translate("phone")}</label>
+              <label>
+                {translate("phone")}<span className="required">*</span>
+                </label>
               <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
             </div>
 
@@ -263,8 +270,8 @@ const ManagementHospital = () => {
 
         {/* Lista de hospitales */}
         {!showForm && renderHospitals()}
-        <Footer></Footer>
       </div>
+      <Footer />
     </Suspense>
   );
 };

@@ -1,0 +1,269 @@
+/* Estilos generales */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
+    /* Fondo claro */
+    color: black;
+    /* Color principal del texto */
+}
+
+/* Contenedor principal */
+.management-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow-x: hidden;
+    /* Evita el desbordamiento horizontal */
+    box-sizing: border-box;
+    /* Incluye el padding y el borde en el ancho total */
+}
+
+/* Título principal */
+.management-container h1 {
+    color: #9155a7;
+    /* Color del título */
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+
+/* Formulario */
+form {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+form h2 {
+    color: #9155a7;
+    /* Color del título del formulario */
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    color: black;
+    /* Color de las etiquetas */
+    font-weight: bold;
+    text-align: left;
+}
+
+form input,
+form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+form input:focus,
+form select:focus {
+    border-color: #9155a7;
+    /* Color del borde al enfocar */
+    outline: none;
+}
+
+form button {
+    width: 100%;
+    background-color: #6dcca3;
+    /* Fondo del botón */
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #2a7e5e;
+    /* Cambio de color al pasar el mouse */
+}
+
+/* Tablas */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    margin-bottom: 50px;
+    /* Espacio en la parte inferior */
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    /* Asegura que la tabla no exceda el ancho del contenedor */
+    box-sizing: border-box;
+    /* Incluye el padding y el borde en el ancho total */
+}
+
+table th,
+table td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ccc;
+}
+
+table th {
+    background-color: #bea7c7;
+    /* Fondo de los encabezados */
+    color: white;
+    /* Texto blanco */
+}
+
+table tr:nth-child(even) {
+    background-color: #f9f9f9;
+    /* Fondo alternado para filas pares */
+}
+
+table tr:hover {
+    background-color: #f1f6f4;
+    /* Fondo al pasar el mouse */
+    color: black;
+    /* Texto negro */
+}
+
+/* Botones de acciones en la tabla */
+table button {
+    background-color: #95cab3;
+    /* Fondo del botón */
+    color: black;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+table button:hover {
+    background-color: #6dcca3;
+    /* Cambio de color al pasar el mouse */
+}
+
+/* Contenedor del tooltip */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Texto del tooltip */
+.tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #f8eba6;
+    /* Fondo del tooltip */
+    color: black;
+    /* Color del texto */
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    /* Posición encima del botón */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.9rem;
+}
+
+/* Flecha del tooltip */
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    /* Apunta hacia el botón */
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #9155a7 transparent transparent transparent;
+}
+
+/* Mostrar el tooltip al pasar el mouse */
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.required {
+    color: red;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+/* Contenedor para tablas responsivas */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    /* Permite el desplazamiento horizontal solo si es necesario */
+    -webkit-overflow-scrolling: touch;
+    /* Mejora la experiencia en dispositivos táctiles */
+    margin-bottom: 20px;
+    /* Espaciado inferior */
+    box-sizing: border-box;
+    /* Asegura que el padding no cause desbordamiento */
+}
+
+/* Ajustes para tablas en pantallas pequeñas */
+@media (max-width: 768px) {
+    table {
+        font-size: 0.9rem;
+        /* Reduce el tamaño del texto */
+    }
+
+    table th,
+    table td {
+        padding: 8px;
+        /* Reduce el relleno de las celdas */
+    }
+}
+/* Contenedor de los botones de acción */
+.action-buttons button {
+    background-color: #95cab3; /* Color de fondo inicial */
+    color: black; /* Color del texto */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transición suave */
+    margin-right: 30px; /* Espaciado entre botones */
+    margin-bottom: 40px; /* Espaciado inferior */
+    margin-top: 40px; /* Espaciado superior */
+}
+
+/* Cambio de color al pasar el mouse */
+.action-buttons button:hover {
+    background-color: #6dcca3; /* Nuevo color de fondo al pasar el mouse */
+    transform: scale(1.02); /* Efecto de agrandamiento */
+}
+
+/* Ajuste para dispositivos móviles */
+@media (max-width: 768px) {
+    .action-buttons button {
+        width: 100%; /* Botones ocupan todo el ancho */
+        margin-bottom: 20px; /* Espaciado entre botones */
+    }
+}
+/* Estilo para los enlaces del menú */
+.nav-link {
+    display: flex;
+    align-items: center; /* Centra verticalmente el ícono con el texto */
+    gap: 5px; /* Espaciado entre el ícono y el texto */
+    font-size: 1rem; /* Tamaño del texto */
+    color: #2a7e5e; /* Color del texto */
+    text-decoration: none; /* Elimina el subrayado */
+    transition: color 0.3s ease; /* Transición para el cambio de color */
+}
+
+/* Ajuste para íconos */
+.nav-link svg {
+    font-size: 0.8rem; /* Tamaño del ícono */
+}

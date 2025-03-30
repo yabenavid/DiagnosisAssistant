@@ -1,5 +1,8 @@
 import React from 'react';
 import '../styles/Footer.css';
+import youtubeIcon from '../assets/youtube.png';
+import facebookIcon from '../assets/facebook.png';
+import instagramIcon from '../assets/instagram.png';
 
 function Footer() {
     return (
@@ -9,10 +12,10 @@ function Footer() {
                     <div className="row">
                         {/* Logo y Descripción */}
                         <div className="col-md-4 mb-3">
-                            <h5>My Website</h5>
+                            <h5>Universidad del Cauca
+                            NIT. 891500319-2</h5>
                             <p>
-                                Tu plataforma para contenido increíble y recursos útiles.
-                                Inspírate y aprende con nosotros.
+                            Posteris Lvmen Moritvrvs Edat (Quién ha de morir deje su luz a la posteridad).
                             </p>
                         </div>
 
@@ -20,10 +23,10 @@ function Footer() {
                         <div className="col-md-4 mb-3">
                             <h5>Enlaces útiles</h5>
                             <ul className="list-unstyled">
-                                <li><a href="#">Inicio</a></li>
-                                <li><a href="#">Sobre nosotros</a></li>
-                                <li><a href="#">Servicios</a></li>
-                                <li><a href="#">Contacto</a></li>
+                                <li><a href="https://www.unicauca.edu.co/">Unicauca</a></li>
+                                <li><a href="https://www.unicauca.edu.co/atencion-al-ciudadano/">Contacto</a></li>
+                                {/* <li><a href="#">Servicios</a></li>
+                                <li><a href="#">Contacto</a></li> */}
                             </ul>
                         </div>
 
@@ -31,9 +34,9 @@ function Footer() {
                         <div className="col-md-4 mb-3">
                             <h5>Síguenos</h5>
                             <div className="social-icons">
-                                <a href="#"><i className="bi bi-facebook"></i></a>
-                                <a href="#"><i className="bi bi-twitter"></i></a>
-                                <a href="#"><i className="bi bi-instagram"></i></a>
+                                <a href="https://www.youtube.com/user/unicaucapopayan"><img src={youtubeIcon} alt="YouTube" className="social-icon" /></a>
+                                <a href="https://www.facebook.com/universidadelcauca/"><img src={facebookIcon} alt="Facebook" className="social-icon" /></a>
+                                <a href="https://www.instagram.com/universidadelcauca/"><img src={instagramIcon} alt="Instagram" className="social-icon" /></a>
                             </div>
                         </div>
                     </div>

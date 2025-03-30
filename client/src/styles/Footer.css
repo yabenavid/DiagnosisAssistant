@@ -10,13 +10,17 @@ footer {
 footer .container {
     max-width: 1200px;
     margin: auto;
+    /* position: fixed; */
+    padding: 15px;
+
 }
 
 /* Estilos de los encabezados */
 footer h5 {
-    font-size: 1.2rem;
+    font-size: 1.0rem;
     font-weight: bold;
     margin-bottom: 15px;
+    color: #9155a7;
 }
 
 /* Estilos del texto y enlaces */

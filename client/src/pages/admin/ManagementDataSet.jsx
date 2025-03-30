@@ -103,8 +103,8 @@ const ManagementDataSet = () => {
                         Subir DataSet
                     </button>
                 </div>
-                <Footer />
             </div>
+                <Footer />
         </Suspense>
     );
 };
