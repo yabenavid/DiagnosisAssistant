@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from managementdataset.models import ImgDataset
 from managementdataset.utils import get_images_from_s3, get_all_images_from_s3
-from .utils import calculate_average, image_to_base64, analyze_image, analyze_image2, get_diagnosis_message
+from .utils import calculate_average, image_to_base64, get_diagnosis_message
 
 class ImageSimilarity:
     def __init__(self):
