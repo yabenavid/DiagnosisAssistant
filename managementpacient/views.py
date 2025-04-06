@@ -24,7 +24,7 @@ def segment_image(request):
 
             print('INITIALIZING VECTORIZATION')
             image_resizer = ImageResizer()
-            resized_images = image_resizer.procesar_imagenes(image_files)
+            resized_images, resized_images_base64 = image_resizer.procesar_imagenes(image_files)
             print('VECTORIZATION FINISHED')
 
             print('INITIALIZING SEGMENTATION')
@@ -50,7 +50,6 @@ def segment_image(request):
                 except json.JSONDecodeError:
                     pass
 
-            # Generar el PDF
             print('GENERATING PDF')
             pdf_content = PDFGenerator.generate_similarity_report(result)
             
@@ -63,23 +62,21 @@ def segment_image(request):
             with open(pdf_path, 'wb') as pdf_file:
                 pdf_file.write(pdf_content)
             
-            # Preparar la respuesta
             print('PREPARING RESPONSE')
 
             frontend_results = [
                 {
                     'average_similarity_percentage': r['average_similarity_percentage'],
                     'diagnosis_message': r['diagnosis_message'],
-                    'pacient_image': r['pacient_image']  # Mantenemos solo base64
+                    'pacient_image': resized_images_base64[i],  # De vectorization
+                    'segmented_pacient_image': r['pacient_image']  # De similarity
                 }
-                for r in result
+                for i, r in enumerate(result)
             ]
-            response_data = {
+            return JsonResponse({
                 'results': frontend_results,
                 'pdf_url': f"/media/reports/{pdf_filename}"
-            }
-            
-            return JsonResponse(response_data, status=200)
+            }, status=200)
             
         except Exception as e:
             print(e)
