@@ -1,31 +1,32 @@
-import React from 'react';
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { Outlet, Link } from "react-router-dom";
 import { FaUserMd, FaHospital, FaHistory, FaHome, FaImages, FaList, FaLock, FaUnlock } from 'react-icons/fa';
-import { VscRemove } from "react-icons/vsc";
-import { FcDeleteColumn } from "react-icons/fc";
 
 import logo from '../assets/logo.png';
 import '../styles/NavigationBar.css';
 
 function NavigationBar() {
     const [isAuth, setIsAuth] = useState(false);
-
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
         if (localStorage.getItem('access_token') !== null) {
+            console.log("Si hay token de acceso");
             setIsAuth(true);
-            setIsAdmin(localStorage.getItem('admin'));
+
+            // Convierte el valor de localStorage a booleano
+            const adminValue = localStorage.getItem('admin') === "true";
+            setIsAdmin(adminValue);
+            console.log("Es admin: ", adminValue);
         }
-    }, [isAuth], [isAdmin]);
+    }, []);
+
     return (
         <>
             <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
                 <div className="container">
                     {/* Logo */}
                     <a className="navbar-brand d-flex align-items-center" href="#">
-                        {/* <img src={logo} alt="Logo" style={{ height: "40px", marginRight: "0.5rem" }} /> */}
                         <i className="bi bi-activity text-purple" style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}></i>
                         <span className="fw-bold text-white">Asistente </span>
                         <span className="fw-bold text-success"> OncoJuntas</span>
@@ -62,10 +63,10 @@ function NavigationBar() {
                             {isAuth && !isAdmin && (
                                 <>
                                     <li className="nav-item">
-                                        <Link className="nav-link" to="/diagnostic"><FaList /> EVALUAR</Link>
+                                        <Link className="nav-link" to="/diagnostic"><FaList /> Evaluar</Link>
                                     </li>
                                     <li className="nav-item">
-                                        <Link className="nav-link" to="/history"><FaHistory /> HISTORIAL</Link>
+                                        <Link className="nav-link" to="/history"><FaHistory /> Historial</Link>
                                     </li>
                                 </>
                             )}

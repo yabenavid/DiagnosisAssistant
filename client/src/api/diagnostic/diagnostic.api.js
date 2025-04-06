@@ -1,15 +1,13 @@
 import axios from 'axios'
-const doctorApi = axios.create({
-    //baseURL: 'https://diagnostico.free.beeceptor.com/'
-    baseURL: 'https://7bc9b5a9-ac63-4468-87cc-13e8f48b27d6.mock.pstmn.io/'
+
+const segmentApi = axios.create({
+    baseURL: 'http://127.0.0.1:8000/segment-image',
+    headers: {
+        "Content-Type": "multipart/form-data"
+    },
+    withCredentials: true
 })
 
-// export const getListDoctor = () => doctorApi.get("/");
 
-export const sendImages = (doctorId, updatedData) => doctorApi.put("/" + doctorId, updatedData);
+export const SegmentImages = (data) => segmentApi.post('/',data); 
 
-// export const deleteDoctor = (doctorId) => doctorApi.delete("/" + doctorId);
-
-// export const addDoctor = (data) => doctorApi.post("/",data);
-
-// TODO: Enviar en el encabezado de la peticion el bearer token 

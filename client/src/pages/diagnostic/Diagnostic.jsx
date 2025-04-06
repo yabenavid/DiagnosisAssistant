@@ -1,54 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationBar, Footer } from "../../components";
 import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
-import { useEffect} from "react";
 import { useNavigate } from "react-router-dom";
-
-//APIs
-import { addDataSet } from "../../api/admin/dataset.api";
+import { SegmentImages } from "../../api/diagnostic/diagnostic.api";
+import '/src/styles/diagnostic/Diagnostic.css';
 
 const Diagnostic = () => {
-    
     const navigate = useNavigate();
+    const [folderName, setFolderName] = useState("");
+    const [imageCount, setImageCount] = useState(0);
+    const [imageList, setImageList] = useState([]);
+    const [resultData, setResultData] = useState(null);
+
     useEffect(() => {
         if (localStorage.getItem('access_token') === null) {
             navigate("/login");
         }
-    }, []);
+    }, [navigate]);
 
-    const [folderName, setFolderName] = useState("");
-    const [zipFile, setZipFile] = useState(null);
-    const [imageCount, setImageCount] = useState(0);
-    const [imageList, setImageList] = useState([]);
-
-    // Subir archivo ZIP al servidor
     const handleUpload = async () => {
-        if (!zipFile || imageCount === 0) {
+        if (imageList.length === 0) {
             alert("No hay imágenes para enviar. Selecciona otra carpeta.");
             return;
         }
 
         const formData = new FormData();
-        formData.append("file", zipFile, `${folderName}.zip`);
+        imageList.forEach((img) => {
+            formData.append("images", img.file);
+        });
+        formData.append("segment_model", 1);
 
         try {
-            const response = await addDataSet(formData);
+            const response = await SegmentImages(formData);
             if (response?.status === 200) {
-                alert(response?.data?.message);
+                // Validación adicional de la respuesta
+                const responseData = response.data || {};
+                console.log("Respuesta del servidor:", response.data);
 
-                // Resetear los estados para limpiar el formulario
+                // Guardar los resultados en el estado
+                setResultData(responseData.results || []); // results es un array
+
+                // Limpiar estados
                 setFolderName("");
-                setZipFile(null);
                 setImageCount(0);
-                setImageList([]); // Limpiar la lista de imágenes
+                setImageList([]);
             } else {
-                alert(response?.data?.message || "Ocurrió un error.");
+                alert(response?.data?.message || "Ocurrió un error desconocido");
             }
-
-            console.log("Respuesta del servidor:", response.data);
         } catch (error) {
-            console.error("Error al subir la carpeta:", error);
-            alert("Error al subir la carpeta.");
+            console.error("Error al subir las imágenes:", error);
+            alert("Error al subir las imágenes.");
         }
     };
 
@@ -56,35 +57,86 @@ const Diagnostic = () => {
         <div>
             <NavigationBar />
 
-            <div style={{ padding: "20px", textAlign: "center" }}>
+            <div className="diagnostic-container">
                 <h2>Seleccionar Carpeta de Imágenes</h2>
-                <button onClick={() => handleSelectFolderDiagnostic(setFolderName, setImageCount, setZipFile, setImageList)}>
+                <button
+                    onClick={() =>
+                        handleSelectFolderDiagnostic(setFolderName, setImageCount, setImageList)
+                    }
+                >
                     Seleccionar Carpeta
                 </button>
-                {console.log(setImageList)}
-                {folderName && <p>📁 Carpeta seleccionada: <strong>{folderName}</strong></p>}
-                {imageCount > 0 && <p>📷 Imágenes encontradas: <strong>{imageCount} (Máx: 10)</strong></p>}
 
-                {/*Mostrar las imágenes seleccionadas */}
+                {folderName && (
+                    <p>
+                        📁 Carpeta seleccionada: <strong>{folderName}</strong>
+                    </p>
+                )}
+
+                {imageCount > 0 && (
+                    <p>
+                        📷 Imágenes encontradas: <strong>{imageCount} (Máx: 3)</strong>
+                    </p>
+                )}
+
                 {imageList.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "10px" }}>
-
+                    <div className="image-preview-container">
                         {imageList.map((img, index) => (
-                            <div key={index} style={{ margin: "5px" }}>
+                            <div key={index} className="image-thumbnail">
                                 <img
                                     src={img.url}
                                     alt={img.name}
-                                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "5px" }}
+                                    className="thumbnail-image"
                                 />
-                                <p style={{ fontSize: "12px" }}>{img.name}</p>
+                                <p className="image-name">{img.name}</p>
                             </div>
                         ))}
                     </div>
                 )}
 
-                <button onClick={handleUpload} disabled={!zipFile} style={{ marginTop: "10px" }}>
+                <button
+                    onClick={handleUpload}
+                    disabled={imageList.length === 0}
+                    className="evaluate-button"
+                >
                     Evaluar
                 </button>
+
+                {resultData && resultData.length > 0 && (
+                    <div className="result-container">
+                        {resultData.map((result, index) => (
+                            <div key={index} className="result-card">
+                                <div
+                                    className="percentage-circle"
+                                    style={{
+                                        background: `conic-gradient(
+                                            #6dcca3 ${result.average_similarity_percentage}%,
+                                            #9155a7 ${result.average_similarity_percentage}% 100%
+                                        )`,
+                                    }}
+                                >
+                                    <span>{result.average_similarity_percentage.toFixed(1)}%</span>
+                                </div>
+
+                                <div className="diagnosis-message">
+                                    <h3>Resultado del Diagnóstico</h3>
+                                    <p className="message-content">{result.diagnosis_message}</p>
+                                </div>
+
+                                {result.pacient_image && (
+                                    <div className="patient-image-section">
+                                        <h3>Imagen del Paciente</h3>
+                                        <img
+                                            src={result.pacient_image}
+                                            alt="Imagen médica"
+                                            className="medical-image"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <Footer />
