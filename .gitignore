@@ -3,6 +3,11 @@ db.sqlite3
 media
 media/*
 
+# Python temp files
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Frontend
 client/logs
 client/*.log
