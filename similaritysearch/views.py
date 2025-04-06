@@ -4,7 +4,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from .models import ImageSimilarityTest
-import os
 
 @csrf_exempt
 def compare_images(request):
