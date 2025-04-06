@@ -2,6 +2,7 @@ from django.db import models
 from io import BytesIO
 from PIL import Image, ImageFilter
 from django.core.files.base import ContentFile
+from .utils import pil_image_to_base64
 
 # Create your models here.
 
@@ -26,6 +27,8 @@ class ImageResizer:
         list: Array de objetos ContentFile con las imágenes procesadas.
         """
         imagenes_procesadas = []
+        imagenes_base64 = []
+        img_base64 = None
         
         for file in image_files:
             # Leer el contenido en bytes de la imagen
@@ -62,6 +65,10 @@ class ImageResizer:
             # Pegar la imagen redimensionada en el canvas
             print('>>Pegar la imagen redimensionada en el canvas')
             canvas.paste(imagen_redimensionada, (offset_x, offset_y))
+
+            # Convertir a base64
+            img_base64 = pil_image_to_base64(canvas)
+            imagenes_base64.append(img_base64)
             
             # Guardar la imagen procesada en un buffer y crear un ContentFile
             print('>>Guardar la imagen procesada en un buffer y crear un ContentFile')
@@ -70,4 +77,4 @@ class ImageResizer:
             processed_file = ContentFile(buffer.getvalue(), name=file.name)
             imagenes_procesadas.append(processed_file)
         
-        return imagenes_procesadas
+        return imagenes_procesadas, imagenes_base64
