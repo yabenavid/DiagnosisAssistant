@@ -14,6 +14,7 @@ const Diagnostic = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [typeImage, setTypeImage] = useState(0);
 
     useEffect(() => {
         if (!localStorage.getItem('access_token')) {
@@ -57,18 +58,32 @@ const Diagnostic = () => {
             result.pacient_image ? [`data:image/png;base64,${result.pacient_image}`] : []
         );
     };
+    const getImagesSegmented = () => {
+        return resultData.flatMap(result => 
+            result.segmented_pacient_image ? [`data:image/png;base64,${result.segmented_pacient_image}`] : []
+        );
+    };
 
-    const openImageModal = (imageSrc, index) => {
+    const openImageModal = (imageSrc, index, type) => {
         setSelectedImage(imageSrc);
         setCurrentImageIndex(index);
         setIsModalOpen(true);
+        setTypeImage(type);
     };
 
     const navigateImages = (direction) => {
+        if (typeImage === 0) {
         const allImages = getAllImages();
         const newIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
         setCurrentImageIndex(newIndex);
         setSelectedImage(allImages[newIndex]);
+        }else {
+            const allImages = getImagesSegmented();
+            const newIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+            setCurrentImageIndex(newIndex);
+            setSelectedImage(allImages[newIndex]);
+        }
+
     };
 
     const closeModal = () => {
@@ -150,21 +165,23 @@ const Diagnostic = () => {
                                             className="medical-image"
                                             onClick={() => openImageModal(
                                                 `data:image/png;base64,${result.pacient_image}`,
-                                                index
+                                                index,
+                                                0
                                             )}
                                         />
                                     </div>
                                 )}
-                                {result.pacient_image && (
+                                {result.segmented_pacient_image && (
                                     <div className="patient-image-section">
                                         <div className="text-image"> <p>Imagen del Asistente</p></div>
                                         <img
-                                            src={`data:image/png;base64,${result.pacient_image}`}
+                                            src={`data:image/png;base64,${result.segmented_pacient_image}`}
                                             alt="Imagen médica"
                                             className="medical-image"
                                             onClick={() => openImageModal(
-                                                `data:image/png;base64,${result.pacient_image}`,
-                                                index
+                                                `data:image/png;base64,${result.segmented_pacient_image}`,
+                                                index,
+                                                1
                                             )}
                                         />
                                     </div>
