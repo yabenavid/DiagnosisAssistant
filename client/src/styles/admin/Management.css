@@ -267,3 +267,45 @@ table button:hover {
 .nav-link svg {
     font-size: 0.8rem; /* Tamaño del ícono */
 }
+
+/* Contenedor de la paginación */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+}
+
+/* Botones de paginación */
+.pagination button {
+    margin: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+    background-color: #f0f0f0; /* Color de fondo por defecto */
+    border: 1px solid #ccc; /* Borde del botón */
+    border-radius: 5px; /* Bordes redondeados */
+    font-size: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease; /* Transición suave */
+}
+
+/* Botón activo */
+.pagination button.active {
+    background-color: #6dcca3; /* Color de fondo para el botón activo */
+    color: white; /* Color del texto para el botón activo */
+    border-color: #6dcca3; /* Borde del botón activo */
+}
+
+/* Efecto hover */
+.pagination button:hover {
+    background-color: #2a7e5e; /* Color de fondo al pasar el mouse */
+    color: white; /* Color del texto al pasar el mouse */
+    border-color: #2a7e5e; /* Borde al pasar el mouse */
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 768px) {
+    .pagination button {
+        padding: 6px 10px; /* Reducir el tamaño de los botones */
+        font-size: 0.9rem; /* Reducir el tamaño del texto */
+    }
+}

@@ -4,7 +4,7 @@ import CryptoJS from "crypto-js"; // Para encriptar los datos
 import { NavigationBar, Footer } from '../../components';
 
 import { FaEdit, FaPlus, FaList } from 'react-icons/fa';
-import { FcDeleteRow, FcTodoList, FcPlus } from "react-icons/fc";
+import { FcEmptyTrash, FcInfo } from "react-icons/fc";
 import '/src/styles/admin/Management.css';
 
 import { useTranslation } from "react-i18next";
@@ -37,6 +37,12 @@ const DoctorManagement = () => {
   const [showForm, setShowForm] = useState(false); // Mostrar/ocultar formulario
   const [hospitals, setHospitals] = useState([]);
   const { t: translate } = useTranslation();
+
+
+  // Cambiar de página
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
+  const rowsPerPage = 10; // Número de filas por página
 
   useEffect(() => {
     if (localStorage.getItem('access_token') === null) {
@@ -257,21 +263,33 @@ const DoctorManagement = () => {
                         <button onClick={() => handleEdit(doctor.id)} style={{ marginRight: "10px" }}>
                           <FaEdit />
                         </button>
-                        <span className="tooltip-text">Editar registro</span>
+                        <span className="tooltip-text"><FcInfo /> Editar</span>
                       </div>
 
                       {/* Botón de eliminar con tooltip */}
                       <div className="tooltip-container">
                         <button onClick={() => handleDelete(doctor.id)}>
-                          <FcDeleteRow />
+                          <FcEmptyTrash />
                         </button>
-                        <span className="tooltip-text">Eliminar registro</span>
+                        <span className="tooltip-text"><FcInfo /> Eliminar</span>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+             {/* Controles de paginación */}
+             <div className="pagination">
+              {Array.from({ length: Math.ceil(listDoctors.length / rowsPerPage) }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => paginate(i + 1)}
+                  className={currentPage === i + 1 ? "active" : ""}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
