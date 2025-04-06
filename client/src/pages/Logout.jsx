@@ -17,6 +17,7 @@ const Logout = () => {
             const refresh = { "refresh_token": localStorage.getItem('refresh_token') };
             try {
                 // Llamada a la API
+                console.log("Token:", localStorage.getItem('access_token'));
                 const response = await LogoutUser(refresh);
                 console.log("Respuesta del servidor Logout:", response?.status);
                 localStorage.clear();
@@ -24,7 +25,8 @@ const Logout = () => {
                 navigate("/login"); // Redirige al login
             } catch (error) {
                 console.error("Error al cerrar sesión:", error);
-                alert("Ocurrió un error al cerrar sesión. Intente nuevamente.");
+                localStorage.clear();
+                // alert("Ocurrió un error al cerrar sesión. Intente nuevamente.");
                 navigate("/"); // Redirige al inicio en caso de error
             }
         };
