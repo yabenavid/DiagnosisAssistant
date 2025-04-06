@@ -221,6 +221,8 @@ class ImageSimilarityResNet:
                 percentage_similarity_by_pacient.append(similarity_percentage)
 
             average_pacient_similarity = calculate_average(percentage_similarity_by_pacient)
+            _, img_bytes = cv2.imencode('.png', pacient_image_data)
+            img_bytes = img_bytes.tobytes()
             pacient_image_base64 = image_to_base64(pacient_image_data)
             diagnosis_message = get_diagnosis_message(average_pacient_similarity/100)
             print(">>Diagnosis message: ", diagnosis_message)
@@ -229,7 +231,8 @@ class ImageSimilarityResNet:
                 {
                     "average_similarity_percentage": average_pacient_similarity,
                     "diagnosis_message": diagnosis_message,
-                    "pacient_image": pacient_image_base64
+                    "pacient_image": pacient_image_base64,
+                    "pacient_image_bytes": img_bytes
                 }
             )
 
