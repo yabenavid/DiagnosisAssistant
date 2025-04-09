@@ -1,6 +1,6 @@
 /* Estilos generales */
 .diagnostic-container {
-    padding: 2rem;
+    padding: 5rem;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -9,6 +9,7 @@ h2 {
     color: #9155a7;
     margin-bottom: 1.5rem;
 }
+
 .text-image {
     margin-top: 1rem;
     color: #2a7e5e;
@@ -219,3 +220,327 @@ button:disabled {
     border-color: #6dcca3;
 }
 
+/* Notificación */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(145deg, #9155a7, #6dcca3);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1001;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+.close-notification {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 10px;
+}
+
+.close-notification:hover {
+    color: #ffeded;
+}
+
+
+/* Formulario de correos */
+.email-form-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.email-form-container h1 {
+    color: #9155a7;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+}
+
+.email-input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 2px solid #ddd;
+    border-radius: 25px;
+    font-size: 1rem;
+}
+
+.email-input:focus {
+    outline: none;
+    border-color: #9155a7;
+}
+
+.add-button {
+    background: #6dcca3;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-button:hover {
+    background: #5cb393;
+}
+
+.add-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.email-list {
+    margin: 1.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.email-item {
+    background: #ffffff;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eee;
+}
+
+.remove-button {
+    background: none;
+    border: none;
+    color: #ff6b6b;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 0.3rem;
+    transition: transform 0.2s;
+}
+
+.remove-button:hover {
+    transform: scale(1.2);
+}
+
+.submit-button:hover {
+    transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+}
+
+.validation-message {
+    color: #ff6b6b;
+    margin: 0.5rem 0;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+.email-counter {
+    text-align: center;
+    color: #666;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.api-response {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.api-response.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.api-response.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* Modal para enviar emails */
+.email-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.email-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    position: relative;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close-email-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #9155a7;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-email-modal:hover {
+    color: #6dcca3;
+}
+
+.send-emails-button {
+    background-color: #6dcca3;
+    /* Color de fondo inicial */
+    color: black;
+    /* Color del texto */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    /* Transición suave */
+    margin-right: 30px;
+    /* Espaciado entre botones */
+    margin-bottom: 40px;
+    /* Espaciado inferior */
+    margin-top: 40px;
+    /* Espaciado superior */
+}
+
+/* 
+.send-emails-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+} */
+
+/* Estilo para el fondo de la página */
+.diagnostic-page {
+    background-image: url('/src/assets/fondo.png');
+    /* Ruta de la imagen */
+    background-size: cover;
+    /* Ajusta la imagen para cubrir toda la página */
+    background-position: center;
+    /* Centra la imagen */
+    background-repeat: no-repeat;
+    /* Evita que la imagen se repita */
+    min-height: 100vh;
+    /* Asegura que el fondo cubra toda la altura de la ventana */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilos modificados para el overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 999;
+    border-radius: 10px;
+}
+
+.loading-container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 2px solid #6dcca3;
+    text-align: center;
+    max-width: 400px;
+    backdrop-filter: blur(2px);
+}
+
+.loading-gif {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+}
+
+.loading-container p {
+    color: #9155a7;
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Añade esto al contenedor padre */
+.diagnostic-page {
+    position: relative;
+    min-height: 100vh;
+}
+
+/* button {
+    width: 100%;
+    background-color: #6dcca3;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2a7e5e;
+} */

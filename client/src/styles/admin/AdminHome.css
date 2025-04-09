@@ -32,6 +32,7 @@
 }
 
 .welcome-banner {
+    margin-top: 70px;
     background: white;
     border-radius: 15px;
     padding: 2rem;
