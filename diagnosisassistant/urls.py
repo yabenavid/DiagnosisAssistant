@@ -24,7 +24,7 @@ urlpatterns = [
     path('', include('managementdataset.urls')),
     path('', include('managementdoctor.urls')),
     path('', include('managementhospital.urls')),
-    path('', include('managementpacient.urls')),
+    path('api/v1/', include('managementpacient.urls')),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),  # Custom login
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token
     path('logout/', LogoutView.as_view(), name ='logout'),  # Logout

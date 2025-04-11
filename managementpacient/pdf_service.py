@@ -1,30 +1,27 @@
 # pdf_service.py
 import io
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
 import base64
-from PyPDF2 import PdfMerger
 
 class PDFGenerator:
     @staticmethod
-    def generate_similarity_report(results):
+    def generate_similarity_report(results, resized_images_base64):
         """
-        Genera un PDF con los resultados del análisis de similitud.
+        Genera un PDF con ambas imágenes (redimensionada y segmentada) lado a lado.
         
         Args:
-            results (list): Lista de resultados de ImageSimilarityResNet
-            
-        Returns:
-            bytes: Contenido del PDF generado
+            results (list): Resultados de ImageSimilarityResNet (contiene segmented_pacient_image)
+            resized_images_base64 (list): Lista de imágenes redimensionadas en base64
         """
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
-        
         styles = getSampleStyleSheet()
+        
+        # Estilo personalizado para el título
         styles.add(ParagraphStyle(
             name='CenterTitle',
             parent=styles['Title'],
@@ -35,42 +32,52 @@ class PDFGenerator:
         story = []
         
         # Título del documento
-        print("Título del documento")
         story.append(Paragraph("Reporte de Análisis de Imágenes Médicas", styles['CenterTitle']))
         
-        for i, result in enumerate(results):
+        for i, (result, resized_b64) in enumerate(zip(results, resized_images_base64)):
             # Sección para cada imagen
-            print(f"Procesando imagen {i+1}")
-            story.append(Paragraph(f"Imagen {i+1}", styles['Heading2']))
+            story.append(Paragraph(f"Análisis {i+1}", styles['Heading2']))
             story.append(Spacer(1, 12))
             
-            # Mostrar el porcentaje de similitud
-            print("Mostrar el porcentaje de similitud")
+            # Datos de diagnóstico
             story.append(Paragraph(
-                f"Porcentaje de similitud promedio: {result['average_similarity_percentage']:.2f}%",
+                f"Similitud promedio: {result['average_similarity_percentage']:.2f}%", 
                 styles['Normal']
             ))
-            
-            # Mostrar el mensaje de diagnóstico
-            print("Mostrar el mensaje de diagnóstico")
             story.append(Paragraph(
-                f"Diagnóstico: {result['diagnosis_message']}",
+                f"Diagnóstico: {result['diagnosis_message']}", 
                 styles['Normal']
             ))
-            story.append(Spacer(1, 12))
+            story.append(Spacer(1, 24))
             
-            print("Mostrar la imagen desde bytes (nuevo enfoque)")
-            # Mostrar la imagen desde bytes (nuevo enfoque)
+            # Tabla con ambas imágenes lado a lado
             try:
-                img = Image(io.BytesIO(result['pacient_image_bytes']), 
-                          width=4*inch, height=4*inch)
-                story.append(img)
+                # Decodificar imágenes
+                resized_img = Image(io.BytesIO(base64.b64decode(resized_b64)), width=3*inch, height=3*inch)
+                segmented_img = Image(io.BytesIO(base64.b64decode(result['pacient_image'])), width=3*inch, height=3*inch)
+                
+                # Crear tabla de 2 columnas
+                img_table = Table([
+                    ["Imagen Original", "Imagen Segmentada"],
+                    [resized_img, segmented_img]
+                ], colWidths=[4*inch, 4*inch])
+                
+                # Estilo de la tabla
+                img_table.setStyle(TableStyle([
+                    ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                    ('FONTSIZE', (0,0), (-1,0), 10),
+                    ('BOTTOMPADDING', (0,0), (-1,0), 12),
+                ]))
+                
+                story.append(img_table)
+                
             except Exception as e:
-                story.append(Paragraph("No se pudo cargar la imagen", styles['Normal']))
-                print(f"Error al cargar imagen: {e}")
+                story.append(Paragraph(f"Error al cargar imágenes: {str(e)}", styles['Normal']))
             
-            # Agregar salto de página si no es la última imagen
-            print("Agregar salto de página si no es la última imagen")
+            story.append(Spacer(1, 24))
+            story.append(Paragraph("Análisis realizado por el asistente de diagnóstico OncoJuntas.", styles['Italic']))
+            
             if i < len(results) - 1:
                 story.append(PageBreak())
         
