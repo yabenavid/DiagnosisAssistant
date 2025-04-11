@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const segmentApi = axios.create({
-    baseURL: 'http://127.0.0.1:8000/segment-image',
+    baseURL: 'http://127.0.0.1:8000/evaluate-images',
     headers: {
         "Content-Type": "multipart/form-data"
     },
