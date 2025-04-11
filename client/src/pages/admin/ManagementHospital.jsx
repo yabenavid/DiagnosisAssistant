@@ -28,6 +28,14 @@ const ManagementHospital = () => {
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const rowsPerPage = 10; // Número de filas por página
 
+  // Calcular los hospitales a mostrar en la página actual
+  const indexOfLastRow = currentPage * rowsPerPage;
+  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+  const currentHospitals = hospitales.slice(indexOfFirstRow, indexOfLastRow);
+
+  // Cambiar de página
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   useEffect(() => {
     if (localStorage.getItem('access_token') === null) {
       navigate("/login");
@@ -50,7 +58,7 @@ const ManagementHospital = () => {
 
         if (response?.status === 200) {
           alert(response?.data?.message);
-          getList();
+          getList(); // Actualiza la lista después de eliminar
         } else {
           alert(response?.data?.message);
         }
@@ -84,6 +92,27 @@ const ManagementHospital = () => {
     setShowForm(true);
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = isEditing
+        ? await updateHospital(currentHospitalId, formData)
+        : await addHospital(formData);
+
+      if (response?.status === 200) {
+        alert(response?.data?.message);
+        setShowForm(false); // Oculta el formulario
+        getList(); // Actualiza la lista después de agregar o editar
+      } else {
+        alert(response?.data?.message || "Ocurrió un error.");
+      }
+    } catch (error) {
+      console.error("Error al guardar el hospital:", error);
+      alert("Error al guardar el hospital.");
+    }
+  };
+
   const getList = async () => {
     try {
       const response = await getListHospital();
@@ -93,14 +122,6 @@ const ManagementHospital = () => {
       alert("Error al obtener los Hospitales, por favor intente de nuevo.");
     }
   };
-
-  // Calcular los hospitales a mostrar en la página actual
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentHospitals = hospitales.slice(indexOfFirstRow, indexOfLastRow);
-
-  // Cambiar de página
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const renderHospitals = () => {
     return (
