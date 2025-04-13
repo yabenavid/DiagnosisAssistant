@@ -4,7 +4,7 @@ import { SendDiagnostic } from "./SendDiagnostic";
 import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
 import { useNavigate } from "react-router-dom";
 import { SegmentImages } from "../../api/diagnostic/diagnostic.api";
-import { FcFeedback, FcFolder, FcFinePrint } from "react-icons/fc";
+import { FcFeedback, FcFolder, FcFinePrint} from "react-icons/fc";
 import '/src/styles/diagnostic/Diagnostic.css';
 
 const Diagnostic = () => {

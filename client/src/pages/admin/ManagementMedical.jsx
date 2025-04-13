@@ -43,6 +43,7 @@ const DoctorManagement = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const [currentPage, setCurrentPage] = useState(1); // Página actual
   const rowsPerPage = 10; // Número de filas por página
+  const ENCRYPTION_KEY = "my-secure-key";
 
   useEffect(() => {
     if (localStorage.getItem('access_token') === null) {
@@ -53,8 +54,6 @@ const DoctorManagement = () => {
     }
 
   }, []);
-
-  const ENCRYPTION_KEY = "my-secure-key";
 
   // Manejar cambios en el formulario
   const handleChange = (e) => {
