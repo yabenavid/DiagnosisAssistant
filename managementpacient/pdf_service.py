@@ -9,13 +9,14 @@ import base64
 
 class PDFGenerator:
     @staticmethod
-    def generate_similarity_report(results, resized_images_base64):
+    def generate_similarity_report(results, resized_images_base64, doctor_name=None):
         """
         Genera un PDF con ambas imágenes (redimensionada y segmentada) lado a lado.
         
         Args:
             results (list): Resultados de ImageSimilarityResNet (contiene segmented_pacient_image)
             resized_images_base64 (list): Lista de imágenes redimensionadas en base64
+            doctor_name (str): Nombre del médico que realiza el análisis
         """
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=letter)
@@ -76,7 +77,13 @@ class PDFGenerator:
                 story.append(Paragraph(f"Error al cargar imágenes: {str(e)}", styles['Normal']))
             
             story.append(Spacer(1, 24))
-            story.append(Paragraph("Análisis realizado por el asistente de diagnóstico OncoJuntas.", styles['Italic']))
+    
+            if doctor_name:
+                analysis_text = f"Evaluación realizada por Dr. {doctor_name}"
+            else:
+                analysis_text = "Evaluación realizada por el asistente de diagnóstico OncoJuntas."
+                
+            story.append(Paragraph(analysis_text, styles['Italic']))
             
             if i < len(results) - 1:
                 story.append(PageBreak())

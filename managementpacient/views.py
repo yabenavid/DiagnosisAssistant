@@ -32,6 +32,10 @@ def evaluate_images(request):
 
             if segment_model is None:
                 return HttpResponse("segment_model parameter is missing", status=400)
+            
+            user = request.user
+            doctor = Doctor.objects.get(user=user)
+            hospital = doctor.belong_set.first().hospital
 
             print('INITIALIZING VECTORIZATION')
             image_resizer = ImageResizer()
@@ -58,17 +62,15 @@ def evaluate_images(request):
                 except json.JSONDecodeError:
                     pass
 
+            doctor_name = f"{doctor.name} {doctor.last_name}"
+
             print('GENERATING PDF')
-            pdf_content = PDFGenerator.generate_similarity_report(result, resized_images_base64)
+            pdf_content = PDFGenerator.generate_similarity_report(result, resized_images_base64, doctor_name)
             
             print('SAVING PDF IN S3')
             storage = HistoryStorage()
             current_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
             pdf_filename = f"resumen-{current_datetime}.pdf"
-
-            user = request.user
-            doctor = Doctor.objects.get(user=user)
-            hospital = doctor.belong_set.first().hospital
 
             s3_key = f"hospital_{hospital.id}/{pdf_filename}"
             storage.save(s3_key, ContentFile(pdf_content))
