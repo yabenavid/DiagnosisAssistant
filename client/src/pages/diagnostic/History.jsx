@@ -4,6 +4,7 @@ import { NavigationBar, Footer } from "../../components";
 import { getHistory } from "../../api/diagnostic/history.api";
 
 import '/src/styles/diagnostic/history.css';
+import { FcDown, FcInfo } from "react-icons/fc";
 
 const History = () => {
     const [data, setData] = useState([]);
@@ -30,17 +31,20 @@ const History = () => {
     const fetchHistory = async () => {
         try {
             const response = await getHistory();
-            
-            if (response?.status !== 200) {
-                setData(response?.data);
-                console.log("Estatus:", response?.status);
-                setLoading(true);
+
+            if (response?.status === 200) {
+                console.log("Data:", response?.data);
+                setData(response?.data || []); // Asegúrate de que siempre sea un array
+            } else {
+                console.error("Error en la respuesta de la API:", response);
+                setData([]); // Si no hay datos, establece un array vacío
             }
-            
         } catch (error) {
             console.error('Error fetching history:', error);
-            setLoading(false);
             alert('Error al cargar el historial');
+            setData([]); // Si hay un error, establece un array vacío
+        } finally {
+            setLoading(false); // Asegúrate de que loading se establezca en false
         }
     };
 
@@ -60,7 +64,7 @@ const History = () => {
             <div style={{ marginTop: "20px" }}>
                 <h2>Historial</h2>
                 {data.length === 0 ? (
-                    <p>No hay registros.</p>
+                    <p>No hay registros.......</p>
                 ) : (
                     <>
                         <table border="1" style={{ width: "100%", textAlign: "left" }}>
@@ -77,10 +81,19 @@ const History = () => {
                                 {currentHistory.map((history, index) => (
                                     <tr key={index}>
                                         <td>{history.id}</td>
-                                        <td>{history.created_at}</td>
+                                        <td>{formatDate(history.created_at)}</td>
                                         <td>{history.filename}</td>
-                                        <td>{history.download_url}
-                                            <span className="tooltip-text"><FcInfo /> Descargar</span>
+                                        <td>
+                                            {/* Botón de descargar */}
+                                            <div className="tooltip-container">
+                                                <button
+                                                    onClick={() => window.open(history.download_url, "_blank")} // Abre el enlace en una nueva pestaña
+                                                    style={{ marginRight: "10px" }}
+                                                >
+                                                    <FcDown /> {/* Ícono de edición */}
+                                                </button>
+                                                <span className="tooltip-text"><FcInfo /> Descargar</span>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -89,7 +102,7 @@ const History = () => {
 
                         {/* Controles de paginación */}
                         <div className="pagination">
-                            {Array.from({ length: Math.ceil(hospitales.length / rowsPerPage) }, (_, i) => (
+                            {Array.from({ length: Math.ceil(data.length / rowsPerPage) }, (_, i) => (
                                 <button
                                     key={i}
                                     onClick={() => paginate(i + 1)}
@@ -117,12 +130,14 @@ const History = () => {
                     {loading ? (
                         <div className="loading-message">
                             <p>Cargando historial...</p>
+
                         </div>
+
                     ) : (
                         <>
                             {data.length === 0 ? (
                                 <div className="records-message">
-                                <p>No hay registros.</p>
+                                    <p>No hay registros.</p>
                                 </div>
                             ) : (
                                 renderHistories()
