@@ -63,24 +63,23 @@ def evaluate_images(request):
             
             print('SAVING PDF IN S3')
             storage = HistoryStorage()
-            current_date = datetime.now().strftime("%Y%m%d")
-            pdf_filename = f"resumen-{current_date}.pdf"
+            current_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
+            pdf_filename = f"resumen-{current_datetime}.pdf"
 
             user = request.user
             doctor = Doctor.objects.get(user=user)
             hospital = doctor.belong_set.first().hospital
 
-            # Estructura en S3: history/hospital_<id>/<filename>
             s3_key = f"hospital_{hospital.id}/{pdf_filename}"
             storage.save(s3_key, ContentFile(pdf_content))
             
-            # 2. Crear registro en DB
+            # Crear registro en DB
             History.objects.create(
                 hospital=hospital,
                 s3_pdf_key=s3_key
             )
 
-            # 3. URL temporal para descarga
+            # URL temporal para descarga
             pdf_url = storage.url(s3_key)
             
             print('PREPARING RESPONSE')
