@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import { useAuth } from "../context/AuthContext"; // Import corregido
 
 // Components
 import { HomeCarousel, Footer, NavigationBar } from "../components";
@@ -14,6 +14,7 @@ import { ValidationUser } from "../api/login.api";
 export function LoginForm() {
     const [formData, setFormData] = useState({ username: "", password: "" });
     const navigate = useNavigate();
+    const { setAuth } = useAuth(); // Uso correcto del hook
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -31,15 +32,16 @@ export function LoginForm() {
             // Llamada a la API
             const response = await ValidationUser(formData);
 
-            console.log("Respuesta del servidor:", response);
-
-            // Verifica si `response` contiene `data` y `is_admin`
-            if (response?.data?.is_admin) {
-                authorization(response?.data);
-                navigate("/adminhome");
-            } else {
-                authorization(response?.data);
-                navigate("/diagnostic");
+            if (response?.data) {
+                authorization(response.data);
+                setAuth({ // Actualizar estado global
+                    accessToken: response.data.access,
+                    isAdmin: response.data.is_admin
+                });
+                
+                response.data.is_admin 
+                    ? navigate("/adminhome") 
+                    : navigate("/diagnostic");
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -53,12 +55,12 @@ export function LoginForm() {
     };
 
     const authorization = (data) => {
-        // Initialize the access & refresh token in localstorage.      
         localStorage.clear();
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
         localStorage.setItem('admin', data.is_admin);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${data['access']}`;
+        
+        // Eliminamos la configuración directa de Axios aquí
     };
 
     return (
