@@ -1,24 +1,26 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { NavigationBar, Footer } from "../../components";
-
 import { getHistory } from "../../api/diagnostic/history.api";
-
 import '/src/styles/diagnostic/history.css';
 import { FcDown, FcInfo } from "react-icons/fc";
+import { useAuth } from "../../context/AuthContext";
 
+/**
+ * Historial de registros de resultados. 
+ */
 const History = () => {
-    const [data, setData] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1); // Página actual
-    const rowsPerPage = 10; // Número de filas por página
 
-    // Calcular los hospitales a mostrar en la página actual
-    const indexOfLastRow = currentPage * rowsPerPage;
-    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-    const currentHistory = data.slice(indexOfFirstRow, indexOfLastRow);
+    const { auth }                      = useAuth();
+    const [data, setData]               = useState([]);
+    const [loading, setLoading]         = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage                   = 10;
 
-    // Cambiar de página
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const indexOfLastRow                = currentPage * rowsPerPage;
+    const indexOfFirstRow               = indexOfLastRow - rowsPerPage;
+    const currentHistory                = data.slice(indexOfFirstRow, indexOfLastRow);
+    const paginate                    = (pageNumber) => setCurrentPage(pageNumber);
+
 
     useEffect(() => {
         if (localStorage.getItem('access_token') === null) {
@@ -30,21 +32,22 @@ const History = () => {
 
     const fetchHistory = async () => {
         try {
-            const response = await getHistory();
+
+            const response = await getHistory(auth.accessToken);
 
             if (response?.status === 200) {
                 console.log("Data:", response?.data);
-                setData(response?.data || []); // Asegúrate de que siempre sea un array
+                setData(response?.data || []);
             } else {
                 console.error("Error en la respuesta de la API:", response);
-                setData([]); // Si no hay datos, establece un array vacío
+                setData([]);
             }
         } catch (error) {
             console.error('Error fetching history:', error);
             alert('Error al cargar el historial');
-            setData([]); // Si hay un error, establece un array vacío
+            setData([]);
         } finally {
-            setLoading(false); // Asegúrate de que loading se establezca en false
+            setLoading(false);
         }
     };
 
@@ -83,7 +86,7 @@ const History = () => {
                                         <td>{history.id}</td>
                                         <td>{formatDate(history.created_at)}</td>
                                         <td>{history.filename}</td>
-                                        <td>
+                                        <td className="files-column">
                                             {/* Botón de descargar */}
                                             <div className="tooltip-container">
                                                 <button

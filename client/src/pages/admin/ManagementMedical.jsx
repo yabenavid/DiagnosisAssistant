@@ -13,8 +13,10 @@ import { useTranslation } from "react-i18next";
 import { getListDoctor, updateDoctor, deleteDoctor, addDoctor } from "../../api/admin/doctor.api";
 import { getListHospital } from "../../api/admin/hospital.api"
 
-const DoctorManagement = () => {
+import { useAuth } from "../../context/AuthContext";
 
+const DoctorManagement = () => {
+  const { auth } = useAuth();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -89,7 +91,7 @@ const DoctorManagement = () => {
       if (isEditing) {
         // Llamar a la API updateDoctor para actualizar el registro del doctor
         console.log("Data editar: ", jsonData);
-        const response = await updateDoctor(currentDoctorId, jsonData); // Llamado a la API
+        const response = await updateDoctor(currentDoctorId, jsonData, auth.accessToken); // Llamado a la API
 
         if (response?.status === 200) {
           alert(response?.data?.message);
@@ -101,7 +103,7 @@ const DoctorManagement = () => {
         }
       } else {
         // Agregar nuevo doctor (si no está en edición)
-        const response = await addDoctor(jsonData);
+        const response = await addDoctor(jsonData, auth.accessToken);
         if (response?.status === 200) {
           alert(response?.data?.message);
 
@@ -160,7 +162,7 @@ const DoctorManagement = () => {
 
     if (confirmed) {
       try {
-        const response = await deleteDoctor(id); // Llamada a la API
+        const response = await deleteDoctor(id, auth.accessToken); // Llamada a la API
 
         if (response?.status === 200) {
           alert(response?.data?.message);
@@ -179,7 +181,7 @@ const DoctorManagement = () => {
   const getList = async () => {
 
     try {
-      const response = await getListDoctor();
+      const response = await getListDoctor(auth.accessToken);
       console.log(response?.data?.doctors);
       setDoctors(response?.data?.doctors)
 
@@ -192,7 +194,7 @@ const DoctorManagement = () => {
   // Obtener Lista de Hospitales
   const getHospital = async () => {
     try {
-      const response = await getListHospital();
+      const response = await getListHospital(auth.accessToken);
       console.log(response);
       setHospitals(response?.data?.hospitals);
 
@@ -243,7 +245,7 @@ const DoctorManagement = () => {
                   <th>Especialidad</th>
                   <th>Email</th>
                   <th>Hospital</th>
-                  <th>Acción</th>
+                  <th className="files-column">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -256,7 +258,7 @@ const DoctorManagement = () => {
                     <td>{doctor.specialism}</td>
                     <td>{doctor.user.email}</td>
                     <td>{hospitals.find((h) => h.id === parseInt(doctor.hospital))?.name}</td>
-                    <td>
+                    <td className="files-column">
                       {/* Botón de editar con tooltip */}
                       <div className="tooltip-container">
                         <button onClick={() => handleEdit(doctor.id)} style={{ marginRight: "10px" }}>

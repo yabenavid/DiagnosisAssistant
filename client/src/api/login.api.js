@@ -10,4 +10,3 @@ const loginApi = axios.create({
 
 
 export const ValidationUser = (infouser) => loginApi.post('/',infouser);
-

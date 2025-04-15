@@ -14,6 +14,9 @@ export const SendDiagnostic = () => {
         return regex.test(email);
     };
 
+    //TODO: al mandar los datos backen enviar el history_id y va en url, como PUT 
+
+    
     const handleAddEmail = () => {
         if (emails.length >= 10) {
             setValidationMessage("Máximo 10 correos permitidos");

@@ -1,38 +1,35 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-
-// APIs
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { LogoutUser } from '../api/logout.api';
 
 const Logout = () => {
-    const navigate = useNavigate();
-    const hasLoggedOut = useRef(false); // Indicador para evitar múltiples llamadas
+    const { auth }      = useAuth();
+    const navigate      = useNavigate();
+    const hasLoggedOut  = useRef(false);
 
     useEffect(() => {
         const performLogout = async () => {
-            if (hasLoggedOut.current) return; // Si ya se ejecutó, no hacer nada
-            hasLoggedOut.current = true; // Marcar como ejecutado
+            if (hasLoggedOut.current) return;
+            hasLoggedOut.current = true;
 
             const refresh = { "refresh_token": localStorage.getItem('refresh_token') };
             try {
-                // Llamada a la API
-                console.log("Token:", localStorage.getItem('access_token'));
-                const response = await LogoutUser(refresh);
-                console.log("Respuesta del servidor Logout:", response?.status);
+                await LogoutUser(refresh, auth.accessToken);
                 localStorage.clear();
                 axios.defaults.headers.common['Authorization'] = null;
-                navigate("/login"); // Redirige al login
+                navigate("/login");
             } catch (error) {
                 console.error("Error al cerrar sesión:", error);
                 localStorage.clear();
-                // alert("Ocurrió un error al cerrar sesión. Intente nuevamente.");
-                navigate("/"); // Redirige al inicio en caso de error
+                alert("Ocurrió un error al cerrar sesión. Intente nuevamente.");
+                navigate("/");
             }
         };
 
         performLogout();
-    }, [navigate]); // Se ejecuta solo una vez al montar el componente
+    }, [navigate]);
 
     return (
         <div>

@@ -6,10 +6,10 @@ export const getAuthHeaders = () => ({
     withCredentials: true
 });
 
-export const getAuthHeadersJson = () => ({
+export const getAuthHeadersJson = (token) => ({
     headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem('access_token')
+        "Authorization": "Bearer " + token
     },
     withCredentials: true
 });

@@ -1,12 +1,9 @@
-import axios from 'axios'
+import axios from 'axios';
+import { getAuthHeadersJson } from '../hooks/Authorization';
 
-const loginApi = axios.create({
+const loginApi = (token) = axios.create({
     baseURL: 'http://127.0.0.1:8000/logout/',
-    headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + localStorage.getItem('access_token')
-    },
-    withCredentials: true
-})
+    ...getAuthHeadersJson(token)
+});
 
-export const LogoutUser = (refresh) => loginApi.post('/',refresh);
+export const LogoutUser = (refresh, token) => loginApi(token).post('/',refresh);
