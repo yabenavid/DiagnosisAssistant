@@ -192,7 +192,7 @@ def send_report_to_emails(request, report_id):
                 filename=report.s3_pdf_key.split('/')[-1]
             )
             
-            return JsonResponse({'message': 'El informe diagnóstico ha sido enviado exitosamente a su correo electrónico'}, status=200)
+            return JsonResponse({'message': 'El informe de diagnóstico ha sido enviado exitosamente'}, status=200)
             
         except History.DoesNotExist:
             return HttpResponse({'message': 'Historial no encontrado'}, status=404)
