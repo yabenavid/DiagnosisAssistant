@@ -1,22 +1,29 @@
 import React, { useState } from "react";
-import { EmailsDiagnostic } from "../../api/diagnostic/senddiagnostic.api";
+import { sendEmail } from "../../api/diagnostic/senddiagnostic.api";
 import { FcFeedback } from "react-icons/fc";
 import '/src/styles/diagnostic/Diagnostic.css';
+import { useAuth } from "../../context/AuthContext";
 
-export const SendDiagnostic = () => {
+const SendDiagnostic = () => {
+    
+    const { auth } = useAuth();
     const [emails, setEmails] = useState([]);
     const [newEmail, setNewEmail] = useState("");
     const [validationMessage, setValidationMessage] = useState("");
     const [apiResponse, setApiResponse] = useState(null);
 
+    /**
+     * Validar el formato del correo electrónico.
+     * @param {string} email 
+     */
     const validateEmail = (email) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(email);
     };
 
-    //TODO: al mandar los datos backen enviar el history_id y va en url, como PUT 
-
-    
+    /**
+     * Agregar un nuevo correo electrónico a la lista.
+     */
     const handleAddEmail = () => {
         if (emails.length >= 10) {
             setValidationMessage("Máximo 10 correos permitidos");
@@ -38,11 +45,19 @@ export const SendDiagnostic = () => {
         setValidationMessage("");
     };
 
+    /**
+     * Eliminar un correo electrónico de la lista.
+     */
     const handleRemoveEmail = (index) => {
         const updatedEmails = emails.filter((_, i) => i !== index);
         setEmails(updatedEmails);
     };
 
+    /**
+     * Enviar los correos electrónicos a la API.
+     * @param {*} e 
+     * @returns 
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -52,10 +67,12 @@ export const SendDiagnostic = () => {
         }
 
         try {
-            const response = await EmailsDiagnostic(emails);
+            const jsonData = JSON.stringify({emails});
+
+            const response = await sendEmail(localStorage.getItem('history_id'), jsonData, auth.accessToken);
             setApiResponse({
                 type: "success",
-                message: "Correos enviados exitosamente"
+                message: response.data.message
             });
             setEmails([]);
         } catch (error) {

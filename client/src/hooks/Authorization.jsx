@@ -1,7 +1,7 @@
-export const getAuthHeaders = () => ({
+export const getAuthHeaders = (token) => ({
     headers: {
         "Content-Type": "multipart/form-data",
-        "Authorization": "Bearer " + localStorage.getItem('access_token')
+        "Authorization": "Bearer " + token
     },
     withCredentials: true
 });

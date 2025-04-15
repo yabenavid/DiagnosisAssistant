@@ -6,8 +6,11 @@ import { useNavigate } from "react-router-dom";
 import { SegmentImages } from "../../api/diagnostic/diagnostic.api";
 import { FcFeedback, FcFolder, FcFinePrint} from "react-icons/fc";
 import '/src/styles/diagnostic/Diagnostic.css';
+import { useAuth } from "../../context/AuthContext";
 
 const Diagnostic = () => {
+    
+    const { auth } = useAuth();
     const navigate = useNavigate();
     const [folderName, setFolderName] = useState("");
     const [imageCount, setImageCount] = useState(0);
@@ -51,8 +54,9 @@ const Diagnostic = () => {
         formData.append("segment_model", 1);
 
         try {
-            const response = await SegmentImages(formData);
+            const response = await SegmentImages(formData, auth.accessToken);
             if (response?.status === 200) {
+                localStorage.setItem('history_id', response.data.history_id || '');
                 const responseData = response.data || {};
                 setResultData(responseData.results || []);
                 setFolderName("");
