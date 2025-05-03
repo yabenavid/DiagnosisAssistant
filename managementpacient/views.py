@@ -1,7 +1,7 @@
 # views.py
 from django.http import HttpResponse, JsonResponse, FileResponse
 from rest_framework.decorators import api_view, authentication_classes
-from segmentation.models import SamImageSegmenter
+from segmentation.models import SamImageSegmenter, SkimageSegmenter
 from segmentation.apps import segmenter_instance
 from similaritysearch.models import ImageSimilarity, ImageSimilarityResNet
 from vectorization.models import ImageResizer
@@ -46,6 +46,9 @@ def evaluate_images(request):
             print('INITIALIZING SEGMENTATION')
             if segment_model == '1':
                 # segmenter_instance = get_segmenter()
+                segmented_images = segmenter_instance.segment_images(resized_images)
+            elif segment_model == '2':
+                segmenter_instance = SkimageSegmenter()
                 segmented_images = segmenter_instance.segment_images(resized_images)
             else:
                 return HttpResponse("Invalid segmentation model param", status=400)
