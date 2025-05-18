@@ -55,13 +55,16 @@ function NavigationBar() {
                                         <Link className="nav-link" to="/"><FaHome /> Inicio</Link>
                                     </li>
                                     <li className="nav-item">
-                                        <Link className="nav-link" to="/about">ACERCA DE</Link>
+                                        <Link className="nav-link" to="/about">Acerca De</Link>
                                     </li>
                                 </>
                             )}
                             {/* Menu del doctor */}
                             {isAuth && !isAdmin && (
                                 <>
+                                <li className="nav-item">
+                                        <Link className="nav-link" to="/admindiagnostic"><FaHome /> Inicio</Link>
+                                    </li>
                                     <li className="nav-item">
                                         <Link className="nav-link" to="/diagnostic"><FaList /> Evaluar</Link>
                                     </li>
