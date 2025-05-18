@@ -1,13 +1,158 @@
+/* Añade esto al contenedor padre */
+.diagnostic-page {
+    /* background-image: url('/src/assets/fondo.png'); */
+    padding-top: 5rem;
+    padding-bottom: 2rem;
+    position: relative;
+    min-height: 100vh;
+}
+
 /* Estilos generales */
 .diagnostic-container {
-    padding: 5rem;
+    padding: 5rem 2rem;
+    padding-bottom: 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    background: rgba(255, 255, 255, 0.1); /* Fondo blanco translúcido */
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+}
+.diagnostic-container button {
+    /* background: linear-gradient(to right, #9155a7, #d0bdd7); */
+    background: #9155a7;
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+
 }
 
 h2 {
     color: #9155a7;
     margin-bottom: 1.5rem;
+}
+
+
+/* Estilo para la clase description */
+
+.description {
+    background:
+        linear-gradient(rgba(109, 204, 163, 0.45), rgba(109, 204, 163, 0.55)),
+        /* Capa verde translúcida */
+        url('/src/assets/fondo.png');
+    /* Marca de agua */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    padding-left: 5vw;
+    padding-right: 5vw;
+    color: #fff;
+    font-size: 2.2rem;
+    margin-bottom: 20px;
+    text-align: left;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.description h3 {
+    color: #f9fbfa;
+    margin-bottom: 8px;
+    text-align: left;
+    /* Justifica a la izquierda */
+    margin-left: 0;
+    /* Sin margen izquierdo extra */
+    padding-left: 0;
+}
+
+.description p {
+    margin: 0;
+    /* Elimina el margen por defecto del párrafo */
+    line-height: 1.5;
+    /* Espaciado entre líneas */
+    color: #fff;
+    /* Color del texto */
+    font-size: 1.2rem;
+    /* Tamaño de fuente */
+    font-style: bold;
+    /* Estilo de fuente */
+}
+
+/* Contenedor de vista previa de imágenes */
+.image-preview-container {
+    display: flex;
+    /* Alinea los elementos en una fila */
+    flex-wrap: wrap;
+    /* Permite que las imágenes se ajusten a la siguiente fila si no caben */
+    gap: 15px;
+    /* Espaciado entre las imágenes */
+    justify-content: center;
+    /* Centra las imágenes horizontalmente */
+    margin-top: 20px;
+    /* Espaciado superior */
+}
+
+/* Miniaturas de las imágenes */
+.image-thumbnail {
+    display: flex;
+    flex-direction: column;
+    /* Alinea la imagen y el texto verticalmente */
+    align-items: center;
+    /* Centra el contenido horizontalmente */
+    border: 1px solid #ccc;
+    /* Borde alrededor de la miniatura */
+    border-radius: 8px;
+    /* Bordes redondeados */
+    padding: 10px;
+    /* Espaciado interno */
+    background-color: #f9f9f9;
+    /* Fondo claro */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Sombra para un efecto elevado */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    /* Transición para hover */
+}
+
+/* Efecto hover en las miniaturas */
+.image-thumbnail:hover {
+    transform: scale(1.05);
+    /* Aumenta ligeramente el tamaño */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    /* Sombra más pronunciada */
+}
+
+/* Imagen dentro de la miniatura */
+.thumbnail-image {
+    width: 150px;
+    /* Ancho fijo para las imágenes */
+    height: 150px;
+    /* Alto fijo para las imágenes */
+    object-fit: cover;
+    /* Ajusta la imagen para que no se deforme */
+    border-radius: 5px;
+    /* Bordes redondeados */
+    margin-bottom: 10px;
+    /* Espaciado entre la imagen y el texto */
+}
+
+/* Nombre de la imagen */
+.image-name {
+    font-size: 0.9rem;
+    /* Tamaño de fuente más pequeño */
+    color: #333;
+    /* Color del texto */
+    text-align: center;
+    /* Centra el texto */
+    word-wrap: break-word;
+    /* Permite que el texto se ajuste si es muy largo */
 }
 
 .text-image {
@@ -25,13 +170,13 @@ h2 {
 }
 
 /* Resultados */
-.result-container {
+/* .result-container {
     margin-top: 3rem;
     padding: 2rem;
     background: #f8f9fa;
     border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .result-card {
     display: flex;
@@ -468,21 +613,7 @@ button:disabled {
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 } */
 
-/* Estilo para el fondo de la página */
-.diagnostic-page {
-    background-image: url('/src/assets/fondo.png');
-    /* Ruta de la imagen */
-    background-size: cover;
-    /* Ajusta la imagen para cubrir toda la página */
-    background-position: center;
-    /* Centra la imagen */
-    background-repeat: no-repeat;
-    /* Evita que la imagen se repita */
-    min-height: 100vh;
-    /* Asegura que el fondo cubra toda la altura de la ventana */
-    display: flex;
-    flex-direction: column;
-}
+
 
 /* Estilos modificados para el overlay */
 .loading-overlay {
@@ -523,11 +654,7 @@ button:disabled {
     font-weight: 500;
 }
 
-/* Añade esto al contenedor padre */
-.diagnostic-page {
-    position: relative;
-    min-height: 100vh;
-}
+
 
 /* button {
     width: 100%;

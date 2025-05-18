@@ -1,0 +1,47 @@
+.segmentation-type-selector {
+    /* background: rgba(109, 204, 163, 0.10); */
+    border: 2px solid #6dcca3;
+    border-radius: 10px;
+    padding: 20px 30px;
+    margin-bottom: 24px;
+    color: #9155a7;
+    max-width: 520px;
+    margin-left: auto;
+    /* Centra horizontalmente */
+    margin-right: auto;
+    /* Centra horizontalmente */
+    text-align: left;
+}
+
+.segmentation-type-selector h4 {
+    color: #9155a7;
+    margin-bottom: 16px;
+    font-weight: 600;
+    font-size: 1.15rem;
+    text-align: left;
+}
+
+.radio-group {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    /* Centra los radios dentro del bloque */
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #6dcca3;
+    cursor: pointer;
+    font-weight: 500;
+    transition: color 0.2s;
+    /* Elimina margin: center; ya que no es válido */
+}
+
+.radio-group input[type="radio"] {
+    accent-color: #9155a7;
+    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+}

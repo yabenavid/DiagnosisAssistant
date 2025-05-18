@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { NavigationBar, Footer } from "../../components";
+import { NavigationBar, Footer, SegmentationTypeSelector } from "../../components";
 import { SendDiagnostic } from "./SendDiagnostic";
 import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
 import { useNavigate } from "react-router-dom";
 import { SegmentImages } from "../../api/diagnostic/diagnostic.api";
-import { FcFeedback, FcFolder, FcFinePrint} from "react-icons/fc";
+import { FcFeedback, FcFolder, FcFinePrint, FcRefresh } from "react-icons/fc";
 import '/src/styles/diagnostic/Diagnostic.css';
 import { useAuth } from "../../context/AuthContext";
 
 const Diagnostic = () => {
-    
+
     const { auth } = useAuth();
     const navigate = useNavigate();
     const [folderName, setFolderName] = useState("");
@@ -23,6 +23,8 @@ const Diagnostic = () => {
     const [showNotification, setShowNotification] = useState(false);
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedOption, setSelectedOption] = useState("");
+
 
     useEffect(() => {
         if (!localStorage.getItem('access_token')) {
@@ -41,6 +43,10 @@ const Diagnostic = () => {
     }, [resultData]);
 
     const handleUpload = async () => {
+        if (!selectedOption) {
+            alert("Debe seleccionar un tipo de segmentación antes de analizar.");
+            return;
+        }
         if (imageList.length === 0) {
             alert("No hay imágenes para enviar. Selecciona otra carpeta.");
             return;
@@ -51,7 +57,7 @@ const Diagnostic = () => {
         imageList.forEach((img) => {
             formData.append("images", img.file);
         });
-        formData.append("segment_model", 1);
+        formData.append("segment_model", selectedOption);
 
         try {
             const response = await SegmentImages(formData, auth.accessToken);
@@ -113,9 +119,9 @@ const Diagnostic = () => {
                 {isLoading && (
                     <div className="loading-overlay">
                         <div className="loading-container">
-                            <img 
-                                src="/src/assets/cargando.gif" 
-                                alt="Cargando..." 
+                            <img
+                                src="/src/assets/cargando.gif"
+                                alt="Cargando..."
                                 className="loading-gif"
                             />
                             <p>Procesando imágenes, por favor espere...</p>
@@ -135,55 +141,64 @@ const Diagnostic = () => {
                     </div>
                 )}
 
+
+                <div className="description">
+                    <h3>Asistente de Diagnóstico</h3>
+                </div>
                 <div className="diagnostic-container">
-                    <div className="welcome-banner">
-                        <h2>Asistente OncoJuntas</h2>
-                        <p>Asistente para el apoyo a juntas médicas
-                            oncológicas en el diagnóstico de cáncer de estómago a partir del uso de
-                            herramientas de segmentación</p>
-                    </div>
-                    
-                    <h2>Seleccionar Carpeta de Imágenes</h2>
-                    <button
-                        onClick={() => {
-                            setResultData(null);
-                            handleSelectFolderDiagnostic(setFolderName, setImageCount, setImageList);
-                        }}
-                    >
-                        <FcFolder/> Seleccionar Carpeta
-                    </button>
 
-                    {folderName && (
-                        <p>📁 Carpeta seleccionada: <strong>{folderName}</strong></p>
+                    {/* Solo muestra el selector y el botón si NO hay resultados */}
+                    {(!resultData || resultData.length === 0) && (
+                        <>
+                            <h4>Seleccione el tipo de segmentación</h4><br />
+                            <SegmentationTypeSelector
+                                selectedOption={selectedOption}
+                                setSelectedOption={setSelectedOption}
+                            />
+                            <h4>Seleccione la carpeta con imágenes</h4>
+                            <div className="action-buttons">
+                                <button
+                                    onClick={() => {
+                                        setResultData(null);
+                                        handleSelectFolderDiagnostic(setFolderName, setImageCount, setImageList);
+                                    }}
+                                >
+                                    <FcFolder /> Seleccionar
+                                </button>
+
+                                {folderName && (
+                                    <p>📁 Carpeta seleccionada: <strong>{folderName}</strong></p>
+                                )}
+
+                                {imageCount > 0 && (
+                                    <p>📷 Imágenes encontradas: <strong>{imageCount} (Máx: 3)</strong></p>
+                                )}
+
+                                {imageList.length > 0 && (
+                                    <div className="image-preview-container">
+                                        {imageList.map((img, index) => (
+                                            <div key={index} className="image-thumbnail">
+                                                <img
+                                                    src={img.url}
+                                                    alt={img.name}
+                                                    className="thumbnail-image"
+                                                />
+                                                <p className="image-name">{img.name}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                                <button
+                                    onClick={handleUpload}
+                                    disabled={imageList.length === 0 || isLoading}
+                                    className="evaluate-button"
+                                >
+                                    <FcFinePrint /> {isLoading ? 'Procesando...' : 'Analizar'}
+                                </button>
+                            </div>
+                        </>
                     )}
 
-                    {imageCount > 0 && (
-                        <p>📷 Imágenes encontradas: <strong>{imageCount} (Máx: 3)</strong></p>
-                    )}
-
-                    {imageList.length > 0 && (
-                        <div className="image-preview-container">
-                            {imageList.map((img, index) => (
-                                <div key={index} className="image-thumbnail">
-                                    <img
-                                        src={img.url}
-                                        alt={img.name}
-                                        className="thumbnail-image"
-                                    />
-                                    <p className="image-name">{img.name}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <div className="action-buttons">
-                    <button 
-                        onClick={handleUpload}
-                        disabled={imageList.length === 0 || isLoading}
-                        className="evaluate-button"
-                    >
-                        <FcFinePrint/> {isLoading ? 'Procesando...' : 'Evaluar'}
-                    </button>
-                    </div>
                     {resultData && resultData.length > 0 && (
                         <div className="result-container">
                             {resultData.map((result, index) => (
@@ -240,7 +255,19 @@ const Diagnostic = () => {
                                 onClick={() => setShowEmailModal(true)}
                                 className="send-emails-button"
                             >
-                                <FcFeedback /> Enviar Resumen de Resultados
+                                <FcFeedback /> Compartir resumen de resultados
+                            </button>
+
+                            <button
+                                className="evaluate-again-button"
+                                onClick={() => {
+                                    setResultData(null);
+                                    setFolderName("");
+                                    setImageCount(0);
+                                    setImageList([]);
+                                }}
+                            >
+                                <FcRefresh /> Volver a evaluar
                             </button>
                         </div>
                     )}

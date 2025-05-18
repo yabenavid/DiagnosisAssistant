@@ -4,8 +4,8 @@ import { FcFeedback } from "react-icons/fc";
 import '/src/styles/diagnostic/Diagnostic.css';
 import { useAuth } from "../../context/AuthContext";
 
-const SendDiagnostic = () => {
-    
+export const SendDiagnostic = () => {
+
     const { auth } = useAuth();
     const [emails, setEmails] = useState([]);
     const [newEmail, setNewEmail] = useState("");
@@ -85,7 +85,7 @@ const SendDiagnostic = () => {
 
     return (
         <div className="email-form-container">
-            <h2>Enviar Resumen de Resultados</h2>
+            <h2>Compartir Resumen de Resultados</h2>
             
             {apiResponse && (
                 <div className={`api-response ${apiResponse.type}`}>
@@ -137,7 +137,7 @@ const SendDiagnostic = () => {
                     className="submit-button"
                     disabled={emails.length === 0}
                 >
-                    Enviar Correos
+                    Enviar
                 </button>
 
                 <div className="email-counter">
