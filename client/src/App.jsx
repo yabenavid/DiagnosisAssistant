@@ -11,6 +11,8 @@ import ManagementHospital from "./pages/admin/ManagementHospital";
 import Diagnostic from "./pages/diagnostic/Diagnostic";
 import History from "./pages/diagnostic/History";
 import Logout from "./pages/Logout";
+import AdminDiagnostic from "./pages/diagnostic/AdminDiagnostic";
+import AcercaDe from "./pages/AcercaDe";
 
 // Css
 import "./App.css";
@@ -25,11 +27,14 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/logout" element={<Logout/>} />
           <Route path="/adminhome" element={<AdminHome />} />
+          <Route path="/admindiagnostic" element={<AdminDiagnostic />} />
           <Route path="/dataset" element={<ManagementDataSet/>} />
           <Route path="/medical" element={<ManagementMedical/>} />
           <Route path="/hospital" element={<ManagementHospital/>} />
           <Route path="/diagnostic" element={<Diagnostic/>} />
           <Route path="/history" element={<History/>} />
+          <Route path="/about" element={<AcercaDe />} />
+
         </Routes>
       </BrowserRouter>
     </div>

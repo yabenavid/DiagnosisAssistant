@@ -25,23 +25,27 @@ export function LoginForm() {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Evita la recarga de la página
 
+        // Validación de correo electrónico
+        if (!formData.username.includes("@")) {
+            alert("Por favor, ingrese un correo electrónico válido que contenga '@'.");
+            return;
+        }
+
         console.log("Formulario enviado:", formData);
-        //navigate("/adminhome");
-        // navigate("/diagnostic");
         try {
             // Llamada a la API
             const response = await ValidationUser(formData);
 
             if (response?.data) {
                 authorization(response.data);
-                setAuth({ // Actualizar estado global
+                setAuth({
                     accessToken: response.data.access,
                     isAdmin: response.data.is_admin
                 });
-                
-                response.data.is_admin 
-                    ? navigate("/adminhome") 
-                    : navigate("/diagnostic");
+
+                response.data.is_admin
+                    ? navigate("/adminhome")
+                    : navigate("/admindiagnostic");
             }
         } catch (error) {
             if (error.response && error.response.status === 401) {
@@ -59,7 +63,7 @@ export function LoginForm() {
         localStorage.setItem('access_token', data.access);
         localStorage.setItem('refresh_token', data.refresh);
         localStorage.setItem('admin', data.is_admin);
-        
+
         // Eliminamos la configuración directa de Axios aquí
     };
 
@@ -73,7 +77,9 @@ export function LoginForm() {
 
                         {/* username */}
                         <div className="form-group">
-                            <label htmlFor="username">Correo Electrónico</label>
+                            <label htmlFor="username">Correo Electrónico
+                                <span className="required">*</span>
+                            </label>
                             <input
                                 type="username"
                                 id="username"
@@ -87,7 +93,9 @@ export function LoginForm() {
 
                         {/* Contraseña */}
                         <div className="form-group">
-                            <label htmlFor="password">Contraseña</label>
+                            <label htmlFor="password">Contraseña
+                                <span className="required">*</span>
+                            </label>
                             <input
                                 type="password"
                                 id="password"
@@ -100,7 +108,7 @@ export function LoginForm() {
                         </div>
 
                         {/* Botón de Enviar */}
-                        <button type="submit" className="btn-submit">
+                        <button type="submit" >
                             Ingresar
                         </button>
 
