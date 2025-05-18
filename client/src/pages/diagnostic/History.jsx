@@ -2,7 +2,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { NavigationBar, Footer } from "../../components";
 import { getHistory } from "../../api/diagnostic/history.api";
 import '/src/styles/diagnostic/history.css';
-import { FcDown, FcInfo } from "react-icons/fc";
+import { FcDownload, FcInfo } from "react-icons/fc";
 import { useAuth } from "../../context/AuthContext";
 
 /**
@@ -10,16 +10,16 @@ import { useAuth } from "../../context/AuthContext";
  */
 const History = () => {
 
-    const { auth }                      = useAuth();
-    const [data, setData]               = useState([]);
-    const [loading, setLoading]         = useState(true);
+    const { auth } = useAuth();
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const rowsPerPage                   = 10;
+    const rowsPerPage = 10;
 
-    const indexOfLastRow                = currentPage * rowsPerPage;
-    const indexOfFirstRow               = indexOfLastRow - rowsPerPage;
-    const currentHistory                = data.slice(indexOfFirstRow, indexOfLastRow);
-    const paginate                    = (pageNumber) => setCurrentPage(pageNumber);
+    const indexOfLastRow = currentPage * rowsPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowsPerPage;
+    const currentHistory = data.slice(indexOfFirstRow, indexOfLastRow);
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
     useEffect(() => {
@@ -64,8 +64,9 @@ const History = () => {
 
     const renderHistories = () => {
         return (
+            <div className="history-table-wrapper">
             <div style={{ marginTop: "20px" }}>
-                <h2>Historial</h2>
+                <h2>Resultados</h2>
                 {data.length === 0 ? (
                     <p>No hay registros.......</p>
                 ) : (
@@ -76,7 +77,7 @@ const History = () => {
                                     <th>Id</th>
                                     <th>Fecha Creación</th>
                                     <th>Nombre</th>
-                                    <th>Archivo</th>
+                                    <th>Acción</th>
 
                                 </tr>
                             </thead>
@@ -93,7 +94,7 @@ const History = () => {
                                                     onClick={() => window.open(history.download_url, "_blank")} // Abre el enlace en una nueva pestaña
                                                     style={{ marginRight: "10px" }}
                                                 >
-                                                    <FcDown /> {/* Ícono de edición */}
+                                                    <FcDownload /> {/* Ícono de edición */}
                                                 </button>
                                                 <span className="tooltip-text"><FcInfo /> Descargar</span>
                                             </div>
@@ -119,39 +120,44 @@ const History = () => {
                     </>
                 )}
             </div>
+            </div>
         );
     };
 
     return (
-        <Suspense fallback="Cargando Traducciones">
-            <div className="history-container">
-                <NavigationBar />
+        <>
+            <Suspense fallback="Cargando Traducciones">
+                <div className="history-container">
+                    <NavigationBar />
 
-                <div className="history-content">
-                    <h2>Historial de Resumen de Resultados</h2>
-
-                    {loading ? (
-                        <div className="loading-message">
-                            <p>Cargando historial...</p>
-
+                    <div className="history-content">
+                        <div className="description">
+                            <h3>Historial</h3>
                         </div>
 
-                    ) : (
-                        <>
-                            {data.length === 0 ? (
-                                <div className="records-message">
-                                    <p>No hay registros.</p>
-                                </div>
-                            ) : (
-                                renderHistories()
-                            )}
-                        </>
-                    )}
-                </div>
+                        {loading ? (
+                            <div className="loading-message">
+                                <p>Cargando historial...</p>
 
-            </div>
-            <Footer />
-        </Suspense>
+                            </div>
+
+                        ) : (
+                            <>
+                                {data.length === 0 ? (
+                                    <div className="records-message">
+                                        <p>No hay registros.</p>
+                                    </div>
+                                ) : (
+                                    renderHistories()
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                </div>
+                <Footer />
+            </Suspense>
+        </>
     );
 };
 
