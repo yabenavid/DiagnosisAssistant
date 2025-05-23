@@ -5,9 +5,10 @@ from django.core.files.base import ContentFile
 from zipfile import ZipFile
 from django.core.files.storage import default_storage
 from vectorization.models import ImageResizer
+from segmentation.apps import segmenter_instance
+from segmentation.models import SkimageSegmenter
 import shutil
 import os
-from segmentation.apps import segmenter_instance
 
 class ImageDatasetSerializer(serializers.ModelSerializer):
     keypoints = serializers.SerializerMethodField()
@@ -37,6 +38,7 @@ class MultipleImageUploadSerializer(serializers.Serializer):
 
 class ZipImageUploadSerializer(serializers.Serializer):
     zip_file = serializers.FileField()
+    segment_model = serializers.CharField(write_only=True, required=False)
 
     def validate_zip_file(self, value):
         if not value.name.endswith('.zip'):
@@ -45,11 +47,9 @@ class ZipImageUploadSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         zip_file = validated_data['zip_file']
+        segment_model = validated_data.get('segment_model', '1')  # Default '1'
         images = []
         ex = False;
-
-        step = 'cargando modelo de sam'
-        print(step)
 
         image_resizer = ImageResizer()
 
@@ -79,14 +79,21 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         print('INITIALIZING SEGMENTATION')
                         step = 'segmentando imagen: ' + resized_image.name
                         print(step)
+
+                        print('segment_model: ' + segment_model)
                         
-                        segmented_images = segmenter_instance.segment_images(resized_images, original_path)
+                        if segment_model == '1':
+                            segmented_images = segmenter_instance.segment_images(resized_images, original_path)
+                        elif segment_model == '2':
+                            skimage_segmenter = SkimageSegmenter()
+                            segmented_images = skimage_segmenter.segment_images(resized_images)
+                        else:
+                            raise Exception("Invalid segmentation model param (must be '1' or '2')")
+
                         print('SEGMENTATION FINISHED')
 
                         step = 'guardando instancia en DB'
                         print(step)
-
-                        print(type(segmented_images[0]))
 
                         img_instance = ImgDataset(image=segmented_images[0])
                         img_instance.save()

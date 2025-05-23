@@ -36,7 +36,11 @@ class DatasetView(viewsets.ModelViewSet):
 
         # TODO: ELIMINAR TODAS LAS IMAGENES EN S3 ANTES DE GUARDAR
 
-        serializer = ZipImageUploadSerializer(data=request.data)
+        data = request.data.copy()
+        segment_model = data.get('segment_model', '1')
+        data['segment_model'] = segment_model
+
+        serializer = ZipImageUploadSerializer(data=data)
         
         if serializer.is_valid():
             try:
