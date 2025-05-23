@@ -4,10 +4,10 @@ from .models import ImgDataset
 from django.core.files.base import ContentFile
 from zipfile import ZipFile
 from django.core.files.storage import default_storage
-from segmentation.models import SamImageSegmenter
 from vectorization.models import ImageResizer
 import shutil
 import os
+from segmentation.apps import segmenter_instance
 
 class ImageDatasetSerializer(serializers.ModelSerializer):
     keypoints = serializers.SerializerMethodField()
@@ -46,11 +46,10 @@ class ZipImageUploadSerializer(serializers.Serializer):
     def create(self, validated_data):
         zip_file = validated_data['zip_file']
         images = []
+        ex = False;
 
         step = 'cargando modelo de sam'
         print(step)
-
-        segmenter = SamImageSegmenter()
 
         image_resizer = ImageResizer()
 
@@ -70,7 +69,7 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         step = 'vectorizando imagen: ' + file_name
                         print(step)
                         # VECTORIZAR
-                        resized_images = image_resizer.procesar_imagenes([image_content])
+                        resized_images, resized_images_base64 = image_resizer.procesar_imagenes([image_content])
                         print('VECTORIZATION FINISHED')
 
                         resized_image = resized_images[0]
@@ -81,7 +80,7 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         step = 'segmentando imagen: ' + resized_image.name
                         print(step)
                         
-                        segmented_images = segmenter.segment_images(resized_images, original_path)
+                        segmented_images = segmenter_instance.segment_images(resized_images, original_path)
                         print('SEGMENTATION FINISHED')
 
                         step = 'guardando instancia en DB'
@@ -99,7 +98,8 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         img_instance.extract_and_save_features(default_storage.path(original_path))
                         images.append(img_instance)
         except Exception as e:
-            print(f'Failed reading, segmenting or saving the image. Reason: {e}')
+            ex = f'Failed reading, segmenting or saving the image. Reason: {e}'
+            print(ex)
 
         # limpiar carpeta uploads
         step = 'limpiando carpeta uploads'
@@ -114,4 +114,8 @@ class ZipImageUploadSerializer(serializers.Serializer):
                     shutil.rmtree(file_path)
             except Exception as e:
                 print(f'Failed to delete {file_path}. Reason: {e}')
+        if ex:
+            raise Exception(
+                f"Error al procesar el archivo ZIP. Asegúrate de que contenga imágenes válidas. Error interno: {ex}"
+            )
         return images
