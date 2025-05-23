@@ -10,7 +10,9 @@ import cv2
 import zlib  # Importar zlib para la compresión
 
 def image_file_name(instance: models.Model, filename: str) -> str:
-    return f"dataset/{uuid.uuid4()}.jpg"
+    # Temp attribute to decide the final route
+    segment_type = getattr(instance, 'segment_type', 'SAM')  # Default SAM
+    return f"dataset/{segment_type}/{uuid.uuid4()}.jpg"
 
 if settings.DEBUG:
     class PostImageStorage(FileSystemStorage):

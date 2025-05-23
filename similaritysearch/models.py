@@ -16,7 +16,7 @@ class ImageSimilarity:
     def __init__(self):
         pass
 
-    def calculate_similarity(self, pacient_images):
+    def calculate_similarity(self, pacient_images, segment_type):
         """
         Calcula la similitud entre las imágenes proporcionadas y las imágenes almacenadas en la base de datos.
         Devuelve un array con los porcentajes de similitud y las rutas de las imágenes con los matches.
@@ -114,7 +114,7 @@ class ImageSimilarity:
 
         # Obtener las imágenes desde S3
         print(">>Getting images from S3")
-        dataset_images_from_s3 = get_images_from_s3(dataset_images)
+        dataset_images_from_s3 = get_images_from_s3(dataset_images, segment_type)
 
         for dataset_image in dataset_images_from_s3:
             for match in matches_data:
@@ -164,7 +164,7 @@ class ImageSimilarityResNet:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-    def calculate_similarity(self, pacient_images):
+    def calculate_similarity(self, pacient_images, segment_type):
         """
         Calcula la similitud entre las imágenes proporcionadas y las imágenes almacenadas en la base de datos.
         Utiliza ResNet para calcular las similitudes.
@@ -173,7 +173,7 @@ class ImageSimilarityResNet:
 
         # Obtener las imágenes de la base de datos
         print(">>Getting images from S3")
-        dataset_images_from_s3 = get_all_images_from_s3()
+        dataset_images_from_s3 = get_all_images_from_s3(segment_type)
 
         for pacient_image in pacient_images:
 

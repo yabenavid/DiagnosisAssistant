@@ -84,9 +84,11 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         
                         if segment_model == '1':
                             segmented_images = segmenter_instance.segment_images(resized_images, original_path)
+                            segment_type = 'SAM'
                         elif segment_model == '2':
                             skimage_segmenter = SkimageSegmenter()
                             segmented_images = skimage_segmenter.segment_images(resized_images)
+                            segment_type = 'Skimage'
                         else:
                             raise Exception("Invalid segmentation model param (must be '1' or '2')")
 
@@ -95,7 +97,9 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         step = 'guardando instancia en DB'
                         print(step)
 
-                        img_instance = ImgDataset(image=segmented_images[0])
+                        img_instance = ImgDataset()
+                        img_instance.segment_type = segment_type  # Temp attribute
+                        img_instance.image = segmented_images[0]
                         img_instance.save()
 
                         step = "Extrayendo keypoints y descriptores"

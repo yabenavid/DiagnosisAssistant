@@ -43,19 +43,23 @@ def evaluate_images(request):
             resized_images, resized_images_base64 = image_resizer.procesar_imagenes(image_files)
             print('VECTORIZATION FINISHED')
 
+            print('segment_model: ' + segment_model)
+
             print('INITIALIZING SEGMENTATION')
             if segment_model == '1':
                 segmented_images = segmenter_instance.segment_images(resized_images)
+                segment_type = 'SAM'
             elif segment_model == '2':
                 skimage_segmenter = SkimageSegmenter()
                 segmented_images = skimage_segmenter.segment_images(resized_images)
+                segment_type = 'Skimage'
             else:
                 return HttpResponse("Invalid segmentation model param", status=400)
             print('SEGMENTATION FINISHED')
 
             print('INITIALIZING SIMILARITY')
             similarity_checker_resnet = ImageSimilarityResNet()
-            result = similarity_checker_resnet.calculate_similarity(segmented_images)
+            result = similarity_checker_resnet.calculate_similarity(segmented_images, segment_type)
             print('SIMILARITY FINISHED')
 
             # Convertir el resultado a JSON si es necesario
