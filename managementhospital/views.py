@@ -7,6 +7,9 @@ from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .permissions import IsAdminUser
+from managementpacient.models import History, HistoryStorage
+from managementdoctor.models import Doctor, Belong
+from django.contrib.auth.models import User
 
 # Create your views here.
 @authentication_classes([JWTAuthentication])  # Requiere autenticación JWT
@@ -59,6 +62,27 @@ class HospitalView(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            hospital_id = instance.id
+
+            # Remove files and folder from S3
+            storage = HistoryStorage()
+            prefix = f"{storage.location}/hospital_{hospital_id}/"
+            bucket = storage.bucket
+
+            objects_to_delete = [{'Key': obj.key} for obj in bucket.objects.filter(Prefix=prefix)]
+
+            if objects_to_delete:
+                bucket.delete_objects(Delete={'Objects': objects_to_delete})
+
+            # Remove history records associated
+            History.objects.filter(hospital=instance).delete()
+
+            # Remove doctors associated
+            belongs = Belong.objects.filter(hospital=instance)
+            doctors = Doctor.objects.filter(id__in=belongs.values('doctor'))
+            user_ids = doctors.values_list('user', flat=True)
+            User.objects.filter(id__in=user_ids).delete()
+
             instance.delete()
             return Response(
                 {"message": "Hospital eliminado con éxito"},
