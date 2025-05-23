@@ -45,11 +45,10 @@ def evaluate_images(request):
 
             print('INITIALIZING SEGMENTATION')
             if segment_model == '1':
-                # segmenter_instance = get_segmenter()
                 segmented_images = segmenter_instance.segment_images(resized_images)
             elif segment_model == '2':
-                segmenter_instance = SkimageSegmenter()
-                segmented_images = segmenter_instance.segment_images(resized_images)
+                skimage_segmenter = SkimageSegmenter()
+                segmented_images = skimage_segmenter.segment_images(resized_images)
             else:
                 return HttpResponse("Invalid segmentation model param", status=400)
             print('SEGMENTATION FINISHED')
