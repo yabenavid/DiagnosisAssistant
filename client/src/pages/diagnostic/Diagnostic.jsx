@@ -44,7 +44,7 @@ const Diagnostic = () => {
 
     const handleUpload = async () => {
         if (!selectedOption) {
-            alert("Debe seleccionar un tipo de segmentación antes de analizar.");
+            alert("Debe seleccionar un modelo de segmentación.");
             return;
         }
         if (imageList.length === 0) {
@@ -150,7 +150,7 @@ const Diagnostic = () => {
                     {/* Solo muestra el selector y el botón si NO hay resultados */}
                     {(!resultData || resultData.length === 0) && (
                         <>
-                            <h4>Seleccione el tipo de segmentación</h4><br />
+                            <h4>Seleccione un modelo segmentación</h4><br />
                             <SegmentationTypeSelector
                                 selectedOption={selectedOption}
                                 setSelectedOption={setSelectedOption}
