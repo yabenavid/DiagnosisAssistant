@@ -12,7 +12,7 @@ import Diagnostic from "./pages/diagnostic/Diagnostic";
 import History from "./pages/diagnostic/History";
 import Logout from "./pages/Logout";
 import AdminDiagnostic from "./pages/diagnostic/AdminDiagnostic";
-import AcercaDe from "./pages/AcercaDe";
+import About from "./pages/About";
 
 // Css
 import "./App.css";
@@ -33,7 +33,7 @@ function App() {
           <Route path="/hospital" element={<ManagementHospital/>} />
           <Route path="/diagnostic" element={<Diagnostic/>} />
           <Route path="/history" element={<History/>} />
-          <Route path="/about" element={<AcercaDe />} />
+          <Route path="/about" element={<About />} />
 
         </Routes>
       </BrowserRouter>

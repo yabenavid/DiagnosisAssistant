@@ -1,6 +1,6 @@
 import React from "react";
 import { HomeCarousel, Footer, NavigationBar } from '../components';
-import "/src/styles/AcercaDe.css";
+import "/src/styles/About.css";
 
 const AcercaDe = () => {
     return (

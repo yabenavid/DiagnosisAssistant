@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, Link } from "react-router-dom";
-import { FaUserMd, FaHospital, FaHistory, FaHome, FaImages, FaList, FaLock, FaUnlock } from 'react-icons/fa';
+import { FaUserMd, FaHospital, FaHistory, FaHome, FaImages, FaList, FaLock, FaUnlock,FaUniversity } from 'react-icons/fa';
 
 import logo from '../assets/logo.png';
 import '../styles/NavigationBar.css';
@@ -55,7 +55,7 @@ function NavigationBar() {
                                         <Link className="nav-link" to="/"><FaHome /> Inicio</Link>
                                     </li>
                                     <li className="nav-item">
-                                        <Link className="nav-link" to="/about">Acerca De</Link>
+                                        <Link className="nav-link" to="/about"><FaUniversity /> Acerca De</Link>
                                     </li>
                                 </>
                             )}
