@@ -42,7 +42,7 @@ header p {
 /* Centrar y ajustar el carousel */
 .home-carousel {
     width: 100%;
-    max-width: 1200px; /* 🔥 Evitar que sea demasiado grande en pantallas grandes */
+    max-width: 1200px; /*Evitar que sea demasiado grande en pantallas grandes */
     margin: auto;
 }
 
@@ -69,7 +69,7 @@ header p {
 .carousel-item,
 .carousel-item img {
     width: 100%;
-    max-height: 600px; /* Ajusta según necesidad */
+    max-height: 700px; /* Ajusta según necesidad */
     object-fit: cover; /* Para que las imágenes no se deformen */
 }
 
@@ -81,9 +81,9 @@ header p {
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     background-color: #9155a7; /* Color personalizado */
-    border-radius: 50%; /* Opcional: para hacer los iconos redondos */
-    width: 50px; /* Ajusta el tamaño según sea necesario */
-    height: 50px; /* Ajusta el tamaño según sea necesario */
+    border-radius: 50%; /*  Iconos redondos */
+    width: 50px; 
+    height: 50px; 
 }
 
 /* Cambiar color al pasar el mouse por encima */

@@ -11,16 +11,10 @@ function Home() {
 
             {/* Contenedor principal para el contenido debajo del NavigationBar */}
             <div className="main-content">
-                <header>
-                    <h1>Asistente para Juntas Médicas Oncológicas</h1>
-                    {/* <p>Cáncer de Estómago</p> */}
-                    {/* <img
-                        src={Banner}
-                        className="d-block w-100"
-                        alt="Slide 1"
-                    /> */}
-                </header>
-
+                <div className="description">
+                    <h4>Cáncer de Estómago</h4>
+                </div>
+            
                 {/* Carousel */}
                 <div className="home-carousel">
                     <HomeCarousel />
