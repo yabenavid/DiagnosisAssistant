@@ -16,13 +16,7 @@ const ManagementHospital = () => {
   const ENCRYPTION_KEY = "my-secure-key";
   const { auth } = useAuth();
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    address: "",
-    phone: ""
-  });
-
+  
   const [hospitales, setHospital] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentHospitalId, setCurrentHospitalId] = useState(null);
@@ -35,8 +29,14 @@ const ManagementHospital = () => {
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
   const currentHospitals = hospitales.slice(indexOfFirstRow, indexOfLastRow);
-
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const [formData, setFormData] = useState({
+    id: "",
+    name: "",
+    address: "",
+    phone: ""
+  });
 
   useEffect(() => {
     if (localStorage.getItem('access_token') === null) {
@@ -63,8 +63,8 @@ const ManagementHospital = () => {
     const confirmed = window.confirm(translate("deleteregister"));
 
     if (confirmed) {
-      try {  
-        const response = await deleteHospital(id,auth.accessToken);
+      try {
+        const response = await deleteHospital(id, auth.accessToken);
 
         if (response?.status === 200) {
           alert(response?.data?.message);
@@ -133,7 +133,7 @@ const ManagementHospital = () => {
         const response = await addHospital(jsonData, auth.accessToken);
         if (response.status === 200) {
           alert(response?.data.message);
-        } 
+        }
       }
     } catch (error) {
       const message = error.response?.data?.message ?? translate("errorupdate");
@@ -151,7 +151,7 @@ const ManagementHospital = () => {
     await getList();
 
   };
-    
+
   /**
    * Limpia los datos del formulario después de enviar o cancelar.
    */
@@ -179,12 +179,11 @@ const ManagementHospital = () => {
 
   /**
    * Renderiza la lista de hospitales en una tabla.
-   * @returns 
    */
   const renderHospitals = () => {
     return (
-      <div style={{ marginTop: "20px" }}>
-        <h2>Hospitales Registrados</h2>
+      <div className="history-table-wrapper">
+        <h2>Registros</h2>
         {hospitales.length === 0 ? (
           <p>No hay Hospitales registrados.</p>
         ) : (
@@ -247,53 +246,59 @@ const ManagementHospital = () => {
   };
 
   return (
-    <Suspense fallback="Cargando Traducciones">
-      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-        <NavigationBar />
-        <h1>Gestión de Hospitales</h1>
+    <>
+      <Suspense fallback="Cargando Traducciones">
+        <div className="management-medical-container">
+          <div className="description">
+            <h3>Gestión Hospitales</h3>
+          </div>
+          <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+            <NavigationBar />
 
-        <div className="action-buttons">
-          <button onClick={handleAddNewHospital} style={{ marginRight: "10px" }}>
-            <FaPlus /> Agregar
-          </button>
-          <button onClick={() => setShowForm(false)}>
-            <FaList /> Ver Todos
-          </button>
+            <div className="action-buttons">
+              <button onClick={handleAddNewHospital} style={{ marginRight: "10px" }}>
+                <FaPlus /> Agregar
+              </button>
+              <button onClick={() => setShowForm(false)}>
+                <FaList /> Ver Todos
+              </button>
+            </div>
+
+            {showForm && (
+              <form onSubmit={handleSubmit} style={{ maxWidth: "400px", margin: "0 auto" }}>
+                <h2>{isEditing ? "Editar Hospital" : "Registrar Nuevo Hospital"}</h2>
+
+                <div style={{ marginBottom: "15px" }}>
+                  <label>
+                    {translate("name")}<span className="required">*</span>
+                  </label>
+                  <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+                </div>
+
+                <div style={{ marginBottom: "15px" }}>
+                  <label>
+                    {translate("address")}<span className="required">*</span>
+                  </label>
+                  <input type="text" name="address" value={formData.address} onChange={handleChange} required />
+                </div>
+
+                <div style={{ marginBottom: "15px" }}>
+                  <label>
+                    {translate("phone")}<span className="required">*</span>
+                  </label>
+                  <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
+                </div>
+
+                <button type="submit">{isEditing ? "Actualizar" : "Registrar"}</button>
+              </form>
+            )}
+
+            {!showForm && renderHospitals()}
+          </div>
         </div>
-
-        {showForm && (
-          <form onSubmit={handleSubmit} style={{ maxWidth: "400px", margin: "0 auto" }}>
-            <h2>{isEditing ? "Editar Hospital" : "Registrar Nuevo Hospital"}</h2>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label>
-                {translate("name")}<span className="required">*</span>
-              </label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required />
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label>
-                {translate("address")}<span className="required">*</span>
-              </label>
-              <input type="text" name="address" value={formData.address} onChange={handleChange} required />
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label>
-                {translate("phone")}<span className="required">*</span>
-              </label>
-              <input type="text" name="phone" value={formData.phone} onChange={handleChange} required />
-            </div>
-
-            <button type="submit">{isEditing ? "Actualizar" : "Registrar"}</button>
-          </form>
-        )}
-
-        {!showForm && renderHospitals()}
-      </div>
-      <Footer />
-    </Suspense>
+        <Footer />
+      </Suspense>
+    </>
   );
 };
 

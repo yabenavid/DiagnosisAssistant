@@ -1,16 +1,16 @@
 import axios from 'axios';
 import { getAuthHeaders } from '../../hooks/Authorization';
 
-const dataSetApi = axios.create({
+const dataSetApi = (token) => axios.create({
     baseURL: 'http://127.0.0.1:8000/api/v1/datasets/images/',
-    ...getAuthHeaders()
+    ...getAuthHeaders(token)
 });
 
-const dataSetCount = axios.create({
+const dataSetCount = (token) => axios.create({
     baseURL: 'http://127.0.0.1:8000/api/v1/datasets/count/',
-    ...getAuthHeaders()
+    ...getAuthHeaders(token)
 });
 
-export const addDataSet = (data) => dataSetApi.post("/", data);
+export const addDataSet = (data, token) => dataSetApi(token).post("/", data);
 
-export const getCountDataSet = () => dataSetCount.get("/");
+export const getCountDataSet = (token) => dataSetCount(token).get("/");

@@ -6,7 +6,12 @@ body {
     color: black;
     /* Color principal del texto */
 }
-
+.management-medical-container{
+    padding-top: 5rem;
+    padding-bottom: 2rem;
+    position: relative;
+    min-height: 100vh;
+}
 /* Contenedor principal */
 .management-container {
     padding: 20px;

@@ -18,6 +18,19 @@ import { useAuth } from "../../context/AuthContext";
 const DoctorManagement = () => {
   const { auth } = useAuth();
   const navigate = useNavigate();
+  
+  const [listDoctors, setDoctors] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentDoctorId, setCurrentDoctorId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [hospitals, setHospitals] = useState([]);
+  const { t: translate } = useTranslation();
+
+  // Cambiar de página
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
+  const rowsPerPage = 10; // Número de filas por página
+  const ENCRYPTION_KEY = "my-secure-key";
 
   const [formData, setFormData] = useState({
     id: "",
@@ -31,21 +44,6 @@ const DoctorManagement = () => {
     },
     hospital: ""
   });
-
-
-  const [listDoctors, setDoctors] = useState([]); // Lista de doctores registrados
-  const [isEditing, setIsEditing] = useState(false); // Indica si estamos editando
-  const [currentDoctorId, setCurrentDoctorId] = useState(null); // Doctor en edición
-  const [showForm, setShowForm] = useState(false); // Mostrar/ocultar formulario
-  const [hospitals, setHospitals] = useState([]);
-  const { t: translate } = useTranslation();
-
-
-  // Cambiar de página
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  const [currentPage, setCurrentPage] = useState(1); // Página actual
-  const rowsPerPage = 10; // Número de filas por página
-  const ENCRYPTION_KEY = "my-secure-key";
 
   useEffect(() => {
     if (localStorage.getItem('access_token') === null) {
@@ -228,9 +226,8 @@ const DoctorManagement = () => {
   // Mostrar todos los doctores registrados
   const renderDoctors = () => {
     return (
-      <div style={{ marginTop: "20px" }}>
-        <h2>Doctores Registrados</h2>
-
+      <div className="history-table-wrapper">
+        <h2>Registros</h2>
         {listDoctors.length === 0 ? (
           <p>No hay doctores registrados.</p>
         ) : (
@@ -299,9 +296,11 @@ const DoctorManagement = () => {
 
   return (
     <Suspense fallback="Cargando Traducciones">
-      <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+      <div className="management-medical-container">
+        <div className="description">
+            <h3>Gestión Médicos</h3>
+          </div>
         <NavigationBar />
-        <h1>Gestión de Doctores</h1>
 
         {/* Botones de acción */}
         <div className="action-buttons">
