@@ -298,7 +298,7 @@ const DoctorManagement = () => {
     <Suspense fallback="Cargando Traducciones">
       <div className="management-medical-container">
         <div className="description">
-            <h3>Gestión Médicos</h3>
+            <h5>Gestión Médicos</h5>
           </div>
         <NavigationBar />
 

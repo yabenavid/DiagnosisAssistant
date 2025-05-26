@@ -13,7 +13,8 @@
     padding-bottom: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.1); /* Fondo blanco translúcido */
+    background: rgba(255, 255, 255, 0.1);
+    /* Fondo blanco translúcido */
     border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -21,6 +22,7 @@
     align-items: center;
 
 }
+
 .diagnostic-container button {
     /* background: linear-gradient(to right, #9155a7, #d0bdd7); */
     background: #9155a7;
@@ -71,6 +73,16 @@ h2 {
     margin-left: 0;
     /* Sin margen izquierdo extra */
     padding-left: 0;
+}
+
+.description h5 {
+    text-align: center;
+    width: 100%;
+    margin: 0 auto;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-style: classic;
 }
 
 .description p {

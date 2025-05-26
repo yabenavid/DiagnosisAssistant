@@ -12,7 +12,7 @@ function Home() {
             {/* Contenedor principal para el contenido debajo del NavigationBar */}
             <div className="main-content">
                 <div className="description">
-                    <h4>Cáncer de Estómago</h4>
+                    <h5>Cáncer de Estómago</h5>
                 </div>
             
                 {/* Carousel */}

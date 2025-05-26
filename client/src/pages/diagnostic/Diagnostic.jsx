@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { NavigationBar, Footer, SegmentationTypeSelector } from "../../components";
+import { NavigationBar, Footer, SegmentationTypeSelector, SimilarityTypeSelector } from "../../components";
 import { SendDiagnostic } from "./SendDiagnostic";
 import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +24,7 @@ const Diagnostic = () => {
     const [showEmailModal, setShowEmailModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedOption, setSelectedOption] = useState("");
+    const [selectedOptionSimilarity, setSelectedOptionSimilarity] = useState("");
 
 
     useEffect(() => {
@@ -143,7 +144,7 @@ const Diagnostic = () => {
 
 
                 <div className="description">
-                    <h3>Asistente de Diagnóstico</h3>
+                    <h5>Asistente de Diagnóstico</h5>
                 </div>
                 <div className="diagnostic-container">
 
@@ -154,6 +155,11 @@ const Diagnostic = () => {
                             <SegmentationTypeSelector
                                 selectedOption={selectedOption}
                                 setSelectedOption={setSelectedOption}
+                            />
+                            <h4>Seleccione un tipo de métrica similitud </h4><br />
+                            <SimilarityTypeSelector
+                                selectedOptionSimilarity={selectedOption}
+                                setSelectedOptionSimilarity={setSelectedOption}
                             />
                             <h4>Seleccione la carpeta con imágenes</h4>
                             <div className="action-buttons">

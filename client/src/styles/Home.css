@@ -99,11 +99,15 @@ header p {
 }
 
 /** information */
+
+
 .card-img-top {
-    /* width: 280px; */
-    /* height: 271px; */
-    object-fit: cover; /* Ajusta la imagen para que se ajuste al contenedor sin distorsionarse */
-    margin: auto; /* Centra la imagen horizontalmente */
+    width: 225px;
+    height: 225px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: block;
 }
 .btn-primary {
     background-color: #9155a7;

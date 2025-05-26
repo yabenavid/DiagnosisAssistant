@@ -90,7 +90,7 @@ const ManagementDataSet = () => {
             <Suspense fallback="Cargando Traducciones">
                 <div className="management-dataset-container">
                     <div className="description">
-                        <h3>Gestión Banco de Imagénes</h3>
+                        <h5>Gestión Banco de Imagénes</h5>
                     </div>
                     <NavigationBar />
                     <div className="management-dataset-flex">
@@ -105,7 +105,7 @@ const ManagementDataSet = () => {
                                 selectedOption={selectedOption}
                                 setSelectedOption={setSelectedOption}
                             />
-
+                            
                             <div style={{ padding: "20px", textAlign: "center" }}>
                                 <h4>Seleccionar Carpeta de Imágenes</h4>
                                 <button onClick={() => handleSelectFolder(setFolderName, setImageCount, setZipFile)}>

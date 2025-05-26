@@ -132,7 +132,7 @@ const History = () => {
 
                     <div className="history-content">
                         <div className="description">
-                            <h3>Historial</h3>
+                            <h5>Historial</h5>
                         </div>
 
                         {loading ? (

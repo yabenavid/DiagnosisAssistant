@@ -1,35 +1,47 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, Link } from "react-router-dom";
-import { FaUserMd, FaHospital, FaHistory, FaHome, FaImages, FaList, FaLock, FaUnlock,FaUniversity } from 'react-icons/fa';
+import { Outlet, Link, useNavigate } from "react-router-dom";
+import { FaUserMd, FaHospital, FaHistory, FaHome, FaImages, FaList, FaLock, FaUnlock, FaUniversity } from 'react-icons/fa';
 
-import logo from '../assets/logo.png';
+import logo from '../assets/logo_1.png';
 import '../styles/NavigationBar.css';
 
 function NavigationBar() {
     const [isAuth, setIsAuth] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (localStorage.getItem('access_token') !== null) {
-            console.log("Si hay token de acceso");
             setIsAuth(true);
-
-            // Convierte el valor de localStorage a booleano
             const adminValue = localStorage.getItem('admin') === "true";
             setIsAdmin(adminValue);
-            console.log("Es admin: ", adminValue);
         }
     }, []);
+
+    // Nueva función para manejar el click en el logo
+    const handleLogoClick = (e) => {
+        e.preventDefault();
+        if (!isAuth) {
+            navigate("/");
+        } else if (isAuth && isAdmin) {
+            navigate("/adminhome");
+        } else if (isAuth && !isAdmin) {
+            navigate("/admindiagnostic");
+        }
+    };
 
     return (
         <>
             <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
                 <div className="container">
-                    {/* Logo */}
-                    <a className="navbar-brand d-flex align-items-center" href="#">
-                        <i className="bi bi-activity text-purple" style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}></i>
-                        <span className="fw-bold text-white">Asistente </span>
-                        <span className="fw-bold text-success"> OncoJuntas</span>
+                    {/* Logo con navegación condicional */}
+                    <a
+                        className="navbar-brand d-flex align-items-center"
+                        href="#"
+                        onClick={handleLogoClick}
+                        style={{ cursor: "pointer" }}
+                    >
+                        <img src={logo} alt="Instrumental médico" />
                     </a>
 
                     {/* Botón de colapso para dispositivos móviles */}
@@ -62,7 +74,7 @@ function NavigationBar() {
                             {/* Menu del doctor */}
                             {isAuth && !isAdmin && (
                                 <>
-                                <li className="nav-item">
+                                    <li className="nav-item">
                                         <Link className="nav-link" to="/admindiagnostic"><FaHome /> Inicio</Link>
                                     </li>
                                     <li className="nav-item">

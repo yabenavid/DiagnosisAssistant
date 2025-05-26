@@ -250,7 +250,7 @@ const ManagementHospital = () => {
       <Suspense fallback="Cargando Traducciones">
         <div className="management-medical-container">
           <div className="description">
-            <h3>Gestión Hospitales</h3>
+            <h5>Gestión Hospitales</h5>
           </div>
           <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
             <NavigationBar />
