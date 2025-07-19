@@ -5,6 +5,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from urllib3 import request
 from .models import ImgDataset
 from .serializer import MultipleImageUploadSerializer, ImageDatasetSerializer, ZipImageUploadSerializer
 from rest_framework.decorators import action
@@ -33,14 +34,7 @@ class DatasetView(viewsets.ModelViewSet):
     serializer_class = ImageDatasetSerializer
 
     def create(self, request, *args, **kwargs):
-
-        # TODO: ELIMINAR TODAS LAS IMAGENES EN S3 ANTES DE GUARDAR
-
-        data = request.data.copy()
-        segment_model = data.get('segment_model', '1')
-        data['segment_model'] = segment_model
-
-        serializer = ZipImageUploadSerializer(data=data)
+        serializer = ZipImageUploadSerializer(data=request.data)
         
         if serializer.is_valid():
             try:
@@ -49,7 +43,11 @@ class DatasetView(viewsets.ModelViewSet):
             except Exception as e:
                 return Response({str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return Response({"message": "El archivo enviado no es válido. Asegúrate de subir un archivo ZIP que contenga imágenes."}, status=status.HTTP_400_BAD_REQUEST)
+            print("Errores del serializer:", serializer.errors)
+            return Response(
+                {"message": "El archivo enviado no es válido. Asegúrate de subir un archivo ZIP que contenga imágenes."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()  # Obtiene el objeto a eliminar
