@@ -10,7 +10,13 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from managementdataset.models import ImgDataset
 from managementdataset.utils import get_images_from_s3, get_all_images_from_s3
-from .utils import calculate_average, image_to_base64, get_diagnosis_message
+from .utils import calculate_average, image_to_base64, get_diagnosis_message, calculate_statistics
+from scipy import linalg
+import torch.nn.functional as F
+from torchvision.models import inception_v3
+from torchvision.models import Inception_V3_Weights
+import csv
+import matplotlib.pyplot as plt
 
 class ImageSimilarity:
     def __init__(self):
@@ -153,88 +159,130 @@ class ImageSimilarity:
 
 class ImageSimilarityResNet:
     def __init__(self):
-        # Cargar el modelo preentrenado de ResNet
         self.model = models.resnet18(weights='IMAGENET1K_V1')
         self.model.eval()
-        
-        # Definir las transformaciones para las imágenes
+
         self.transform = transforms.Compose([
             transforms.Resize((224, 224)),
             transforms.ToTensor(),
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-    def calculate_similarity(self, pacient_images, segment_type):
-        """
-        Calcula la similitud entre las imágenes proporcionadas y las imágenes almacenadas en la base de datos.
-        Utiliza ResNet para calcular las similitudes.
-        """
-        results = []
+    # def extract_green_mask(self, image_bgr):
+    #     """
+    #     Extrae una máscara binaria de la zona verde (segmentada) en una imagen BGR.
+    #     """
+    #     hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+    #     lower_green = np.array([40, 40, 40])
+    #     upper_green = np.array([80, 255, 255])
+    #     mask = cv2.inRange(hsv, lower_green, upper_green)
+    #     binary_mask = (mask > 0).astype(np.uint8)
+    #     return binary_mask
 
-        # Obtener las imágenes de la base de datos
-        print(">>Getting images from S3")
+    def extract_green_mask(self, image_bgr):
+        """
+        Extrae una máscara binaria de la zona verde (segmentada) en una imagen BGR.
+        Además, muestra la imagen original y la máscara resultante usando matplotlib.
+        """
+        hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
+        lower_green = np.array([40, 40, 40])
+        upper_green = np.array([80, 255, 255])
+        mask = cv2.inRange(hsv, lower_green, upper_green)
+        binary_mask = (mask > 0).astype(np.uint8)
+
+        # Mostrar la imagen original y la máscara usando matplotlib
+        # import matplotlib.pyplot as plt
+        # imagen_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
+        # plt.figure(figsize=(10, 5))
+        # plt.subplot(1, 2, 1)
+        # plt.imshow(imagen_rgb)
+        # plt.title("Imagen Original")
+        # plt.axis("off")
+        # plt.subplot(1, 2, 2)
+        # plt.imshow(binary_mask, cmap="gray")
+        # plt.title("Máscara Verde (Binaria)")
+        # plt.axis("off")
+        # plt.tight_layout()
+        # plt.show()
+
+        return binary_mask
+
+    def calculate_similarity(self, pacient_images, segment_type, method="resnet"):
+        results = []
         dataset_images_from_s3 = get_all_images_from_s3(segment_type)
 
-        for pacient_image in pacient_images:
+        if method == "fid":
+            pacient_imgs_list = [cv2.imdecode(np.frombuffer(p.read(), np.uint8), cv2.IMREAD_COLOR) for p in pacient_images]
+            dataset_imgs_list = [d['image'] for d in dataset_images_from_s3]
+            fid_value = self.calculate_fid_score(pacient_imgs_list, dataset_imgs_list)
+            results.append({
+                "fid_score": fid_value,
+                "diagnosis_message": f"FID: {fid_value:.2f} (menor es mejor)",
+                "pacient_image": None,
+                "pacient_image_bytes": None
+            })
+            return results
 
+        for pacient_image in pacient_images:
             percentage_similarity_by_pacient = []
 
-            # Leer la imagen del paciente
-            print(">>Reading pacient image")
+            # Leer imagen paciente
             pacient_image_data = cv2.imdecode(
                 np.frombuffer(pacient_image.read(), np.uint8), cv2.IMREAD_COLOR
             )
 
-            # Convertir la imagen de NumPy a PIL
-            pacient_image_pil = Image.fromarray(cv2.cvtColor(pacient_image_data, cv2.COLOR_BGR2RGB))
+            if method == "resnet":
+                pacient_image_pil = Image.fromarray(cv2.cvtColor(pacient_image_data, cv2.COLOR_BGR2RGB))
+                pacient_image_tensor = self.transform(pacient_image_pil).unsqueeze(0)
+                with torch.no_grad():
+                    pacient_features = self.model(pacient_image_tensor).numpy()
 
-            # Transformar la imagen segmentada
-            print(">>Transforming image")
-            pacient_image_tensor = self.transform(pacient_image_pil).unsqueeze(0)
+            elif method in ["dice", "iou"]:
+                pacient_binary = self.extract_green_mask(pacient_image_data)
+            
+            elif method == "psnr":
+                pacient_image_clean = pacient_image_data
 
-            # Extraer características con ResNet
-            print(">>Extracting features")
-            with torch.no_grad():
-                pacient_features = self.model(pacient_image_tensor).numpy()
+            else:
+                raise ValueError("Método de comparación no soportado: elija 'resnet', 'dice' o 'iou'.")
 
             for data_dataset in dataset_images_from_s3:
-                # Leer la imagen de la base de datos desde el diccionario
-                print(">>Reading dataset image")
                 dataset_image = data_dataset['image']
 
-                # Convertir la imagen de NumPy a PIL
-                dataset_image_pil = Image.fromarray(cv2.cvtColor(dataset_image, cv2.COLOR_BGR2RGB))
+                if method == "resnet":
+                    dataset_image_pil = Image.fromarray(cv2.cvtColor(dataset_image, cv2.COLOR_BGR2RGB))
+                    dataset_image_tensor = self.transform(dataset_image_pil).unsqueeze(0)
+                    with torch.no_grad():
+                        dataset_features = self.model(dataset_image_tensor).numpy()
+                    similarity_percentage = self.calculate_cosine_similarity(pacient_features, dataset_features)
 
-                # Transformar la imagen segmentada
-                print(">>Transforming image")
-                dataset_image_tensor = self.transform(dataset_image_pil).unsqueeze(0)
+                elif method == "dice":
+                    dataset_binary = self.extract_green_mask(dataset_image)
+                    similarity_percentage = self.dice_coefficient_images(pacient_binary, dataset_binary) * 100
 
-                # Extraer características con ResNet
-                print(">>Extracting features")
-                with torch.no_grad():
-                    dataset_features = self.model(dataset_image_tensor).numpy()
+                elif method == "iou":
+                    dataset_binary = self.extract_green_mask(dataset_image)
+                    similarity_percentage = self.iou_coefficient_images(pacient_binary, dataset_binary) * 100
 
-                # Calcular la similitud entre las características
-                print(">>Calculating similarity")
-                similarity_percentage = self.calculate_cosine_similarity(pacient_features, dataset_features)
+                elif method == "psnr":
+                    similarity_percentage = self.calculate_psnr(pacient_image_clean, dataset_image)
 
+
+                print("Similarity percentage:", similarity_percentage)
                 percentage_similarity_by_pacient.append(similarity_percentage)
 
             average_pacient_similarity = calculate_average(percentage_similarity_by_pacient)
             _, img_bytes = cv2.imencode('.png', pacient_image_data)
             img_bytes = img_bytes.tobytes()
             pacient_image_base64 = image_to_base64(pacient_image_data)
-            diagnosis_message = get_diagnosis_message(average_pacient_similarity/100)
-            print(">>Diagnosis message: ", diagnosis_message)
-            
-            results.append(
-                {
-                    "average_similarity_percentage": average_pacient_similarity,
-                    "diagnosis_message": diagnosis_message,
-                    "pacient_image": pacient_image_base64,
-                    "pacient_image_bytes": img_bytes
-                }
-            )
+            diagnosis_message = get_diagnosis_message(average_pacient_similarity / 100)
+
+            results.append({
+                "average_similarity_percentage": average_pacient_similarity,
+                "diagnosis_message": diagnosis_message,
+                "pacient_image": pacient_image_base64,
+                "pacient_image_bytes": img_bytes
+            })
 
         return results
 
@@ -242,13 +290,274 @@ class ImageSimilarityResNet:
         """
         Calcula la similitud coseno entre dos vectores de características.
         """
-        print(">>Calculating cosine similarity")
-        dot_product = np.dot(features1, features2.T)
+        features1 = features1.flatten()
+        features2 = features2.flatten()
+        dot_product = np.dot(features1, features2)
         norm1 = np.linalg.norm(features1)
         norm2 = np.linalg.norm(features2)
         similarity = dot_product / (norm1 * norm2)
-        print(similarity * 100)
-        return similarity * 100
+        return float(similarity * 100)  # Asegura que retorna un float
+
+    def dice_coefficient_images(self, img1, img2):
+        """
+        Calcula el coeficiente de Dice entre dos imágenes binarias.
+        """
+        if img1.shape != img2.shape:
+            raise ValueError("Las imágenes deben tener el mismo tamaño.")
+
+        img1 = img1.astype(bool)
+        img2 = img2.astype(bool)
+
+        intersection = np.logical_and(img1, img2).sum()
+        total = img1.sum() + img2.sum()
+
+        if total == 0:
+            return 1.0
+
+        return 2.0 * intersection / total
+    
+    def iou_coefficient_images(self, img1, img2):
+        """
+        Calcula el coeficiente IoU (Intersection over Union) entre dos imágenes binarias.
+        """
+        if img1.shape != img2.shape:
+            raise ValueError("Las imágenes deben tener el mismo tamaño.")
+
+        img1 = img1.astype(bool)
+        img2 = img2.astype(bool)
+        
+        intersection = np.logical_and(img1, img2).sum()
+        union = np.logical_or(img1, img2).sum()
+
+        if union == 0:
+            return 1.0
+
+        return intersection / union
+
+    def calculate_fid_score(self, imgs1, imgs2, device='cpu'):
+        """
+        Calcula el FID entre dos conjuntos de imágenes (tensores PIL o numpy).
+        """
+        model = inception_v3(weights=Inception_V3_Weights.DEFAULT, transform_input=False).to(device)
+        model.fc = torch.nn.Identity()  # Usamos la penúltima capa
+        model.eval()
+
+        def get_activations(imgs):
+            processed = []
+            for img in imgs:
+                if isinstance(img, np.ndarray):
+                    img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+                img = transforms.Resize((299, 299))(img)
+                img = transforms.ToTensor()(img).unsqueeze(0)
+                img = transforms.Normalize([0.5]*3, [0.5]*3)(img)
+                processed.append(img.to(device))  # <-- Mueve cada tensor individualmente
+            batch = torch.cat(processed)
+            with torch.no_grad():
+                activations = model(batch).cpu().numpy()
+            return activations
+
+        act1 = get_activations(imgs1)
+        act2 = get_activations(imgs2)
+
+        mu1, sigma1 = act1.mean(axis=0), np.cov(act1, rowvar=False)
+        mu2, sigma2 = act2.mean(axis=0), np.cov(act2, rowvar=False)
+
+        diff = mu1 - mu2
+        covmean, _ = linalg.sqrtm(sigma1 @ sigma2, disp=False)
+
+        if np.iscomplexobj(covmean):
+            covmean = covmean.real
+
+        fid = diff.dot(diff) + np.trace(sigma1 + sigma2 - 2 * covmean)
+        return fid
+
+    def calculate_psnr(self, img1, img2): 
+        """
+        Calcula la métrica PSNR (Peak Signal to Noise Ratio) entre dos imágenes a color.
+        """
+        if img1.shape != img2.shape:
+            raise ValueError("Las imágenes deben tener el mismo tamaño.")
+
+        mse = np.mean((img1.astype(np.float32) - img2.astype(np.float32)) ** 2)
+        if mse == 0:
+            return float('inf')  # imágenes idénticas
+        max_pixel = 255.0
+        psnr = 10 * np.log10((max_pixel ** 2) / mse)
+        return psnr
+
+    def run_all_metrics_and_export_csv(self, pacient_images, segment_type, output_path="resultados_metricas.csv", dataset_folder=None):
+        """
+        Ejecuta todas las métricas disponibles sobre las imágenes del paciente y guarda los resultados en un CSV.
+        Usa imágenes de una carpeta local si dataset_folder está definido.
+        """
+        # for p in pacient_images:
+        #     img = cv2.imdecode(np.frombuffer(p.read(), np.uint8), cv2.IMREAD_COLOR)
+        #     visualizar_mascara_verde(img, self.extract_green_mask, titulo="Paciente 1")
+        #     return
+
+        # return
+        #------------------------------------------------
+        csv_rows = []
+
+        # Convertir imágenes a formato reutilizable
+        pacient_imgs_list = []
+        pacient_filenames = []
+        for p in pacient_images:
+            img = cv2.imdecode(np.frombuffer(p.read(), np.uint8), cv2.IMREAD_COLOR)
+            pacient_imgs_list.append(img)
+            pacient_filenames.append(getattr(p, 'name', 'desconocida'))
+
+        # Obtener dataset desde carpeta local o S3
+        print(">>Getting dataset images")
+        if dataset_folder:
+            dataset_imgs_list = [d['image'] for d in self.get_images_from_local_folder(dataset_folder)]
+        else:
+            dataset_imgs_list = [d['image'] for d in get_all_images_from_s3(segment_type)]
+
+        for idx, pacient_img in enumerate(pacient_imgs_list):
+            print(">>Image", idx + 1)
+            filename = pacient_filenames[idx]
+
+            # ---------- Métrica: Cosine ----------
+            print(">>Calculating cosine similarity")
+            try:
+                pacient_tensor = self.transform(Image.fromarray(cv2.cvtColor(pacient_img, cv2.COLOR_BGR2RGB))).unsqueeze(0)
+                with torch.no_grad():
+                    pacient_features = self.model(pacient_tensor).numpy()
+                cosine_scores = []
+                for ds_img in dataset_imgs_list:
+                    ds_tensor = self.transform(Image.fromarray(cv2.cvtColor(ds_img, cv2.COLOR_BGR2RGB))).unsqueeze(0)
+                    with torch.no_grad():
+                        ds_features = self.model(ds_tensor).numpy()
+                    cosine_scores.append(self.calculate_cosine_similarity(pacient_features, ds_features))
+                avg_cosine = calculate_statistics(cosine_scores)
+                mode = avg_cosine['mode'] if avg_cosine['mode'] is not None else 0
+                print("Cosine statistics:", avg_cosine)
+                result = "Cancer" if mode >= 67 else "No cancer"
+                csv_rows.append([filename, segment_type, "cosine", round(mode, 2), result])
+            except Exception as e:
+                print("Error en cosine:", e)
+
+            # # ---------- Métrica: Dice ----------
+            print(">>Calculating dice coefficient")
+            try:
+                pacient_mask = self.extract_green_mask(pacient_img)
+                dice_scores = []
+                for ds_img in dataset_imgs_list:
+                    ds_mask = self.extract_green_mask(ds_img)
+                    dice_scores.append(self.dice_coefficient_images(pacient_mask, ds_mask) * 100)
+                avg_dice = calculate_statistics(dice_scores)
+                print("Dice statistics:", avg_dice)
+                mode = avg_dice['mode'] if avg_dice['mode'] is not None else 0
+                result = "Cancer" if mode >= 40 else "No cancer"
+                csv_rows.append([filename, segment_type, "dice", round(mode, 2), result])
+            except Exception as e:
+                print("Error en dice:", e)
+
+            # # ---------- Métrica: IoU ----------
+            print(">>Calculating IoU")
+            try:
+                pacient_mask = self.extract_green_mask(pacient_img)
+                iou_scores = []
+                for ds_img in dataset_imgs_list:
+                    ds_mask = self.extract_green_mask(ds_img)
+                    iou_scores.append(self.iou_coefficient_images(pacient_mask, ds_mask) * 100)
+                avg_iou = calculate_statistics(iou_scores)
+                print("IoU statistics:", avg_iou)
+                mode = avg_iou['mode'] if avg_iou['mode'] is not None else 0
+                result = "Cancer" if mode >= 39 else "No cancer"
+                csv_rows.append([filename, segment_type, "iou", round(mode, 2), result])
+            except Exception as e:
+                print("Error en iou:", e)
+
+            # # ---------- Métrica: PSNR ----------
+            print(">>Calculating PSNR")
+            try:
+                psnr_scores = []
+                for ds_img in dataset_imgs_list:
+                    if pacient_img.shape == ds_img.shape:
+                        psnr_scores.append(self.calculate_psnr(pacient_img, ds_img))
+                avg_psnr = calculate_statistics(psnr_scores)
+                print("PSNR statistics:", avg_psnr)
+                mode = avg_psnr['mode'] if avg_psnr['mode'] is not None else 0
+                result = "Cancer" if mode <= 10 else "No cancer"
+                csv_rows.append([filename, segment_type, "psnr", round(mode, 2), result])
+            except Exception as e:
+                print("Error en psnr:", e)
+
+        # ---------- Métrica: FID (solo una vez por lote) ----------
+        print(">>Calculating FID")
+        try:
+            fid_value = self.calculate_fid_score(pacient_imgs_list, dataset_imgs_list)
+            print("FID Value:", fid_value)
+            result = "Cáncer" if fid_value <= 30 else "No cáncer"
+            csv_rows.append(["LOTE", "inceptionv3", "fid", round(fid_value, 2), result])
+        except Exception as e:
+            print("Error en fid:", e)
+
+        # ---------- Guardar CSV ----------
+        print(">>Saving CSV")
+        try:
+            with open(output_path, mode='w', newline='', encoding='utf-8') as file:
+                writer = csv.writer(file)
+                writer.writerow(["imagen", "modelo", "metrica", "resultado %", "diagnostico"])
+                writer.writerows(csv_rows)
+            print(f"CSV guardado en: {output_path}")
+        except Exception as e:
+            print("Error al guardar CSV:", e)
+
+    def get_images_from_local_folder(self, folder_path):
+        """
+        Lee todas las imágenes de una carpeta local y las retorna como una lista de diccionarios
+        con las claves 'image' (np.ndarray) y 'name' (nombre de archivo).
+        """
+        import cv2
+        import numpy as np
+        images = []
+        for filename in os.listdir(folder_path):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif')):
+                image_path = os.path.join(folder_path, filename)
+                image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+                if image is not None:
+                    images.append({'image': image, 'name': filename})
+
+        print(f"Imágenes leídas de dataset: {len(images)}")
+        return images
+
+def visualizar_mascara_verde(imagen_bgr, extract_mask_fn, titulo="Visualización máscara"):
+    """
+    Visualiza la imagen original BGR junto a la máscara binaria extraída con extract_green_mask.
+
+    Args:
+        imagen_bgr (np.ndarray): Imagen original en formato BGR.
+        extract_mask_fn (callable): Función que extrae la máscara (por ejemplo, extract_green_mask).
+        titulo (str): Título para la figura.
+    """
+    # Asegurarse de que la imagen tenga el formato correcto
+    if imagen_bgr is None or imagen_bgr.ndim != 3 or imagen_bgr.shape[2] != 3:
+        raise ValueError("La imagen debe ser un arreglo BGR válido con 3 canales.")
+
+    # Convertir imagen BGR a RGB para visualizar con matplotlib
+    imagen_rgb = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2RGB)
+
+    # Generar máscara binaria
+    mascara_binaria = extract_mask_fn(imagen_bgr)
+
+    # Mostrar lado a lado
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.imshow(imagen_rgb)
+    plt.title("Imagen Original")
+    plt.axis("off")
+
+    plt.subplot(1, 2, 2)
+    plt.imshow(mascara_binaria, cmap="gray")
+    plt.title("Máscara Verde (Binaria)")
+    plt.axis("off")
+
+    plt.suptitle(titulo)
+    plt.tight_layout()
+    plt.show()
 
 class ImageSimilarityTest:
     def __init__(self, original_image_path, compare_image_path):
