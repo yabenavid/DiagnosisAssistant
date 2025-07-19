@@ -1,19 +1,17 @@
 # views.py
 from django.http import HttpResponse, JsonResponse, FileResponse
 from rest_framework.decorators import api_view, authentication_classes
-from segmentation.models import SamImageSegmenter, SkimageSegmenter
+from segmentation.models import SamImageSegmenter, SkimageSegmenter, UnetImageSegmenter
 from segmentation.apps import segmenter_instance
 from similaritysearch.models import ImageSimilarity, ImageSimilarityResNet
 from vectorization.models import ImageResizer
 from .pdf_service import PDFGenerator
 import json
-
 from .models import History, HistoryStorage
 from managementdoctor.models import Doctor
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.files.base import ContentFile
 from datetime import datetime
-
 from rest_framework import generics
 from .serializer import HistorySerializer
 from rest_framework.permissions import IsAuthenticated
@@ -38,10 +36,14 @@ def evaluate_images(request):
             doctor = Doctor.objects.get(user=user)
             hospital = doctor.belong_set.first().hospital
 
-            print('INITIALIZING VECTORIZATION')
             image_resizer = ImageResizer()
-            resized_images, resized_images_base64 = image_resizer.procesar_imagenes(image_files)
-            print('VECTORIZATION FINISHED')
+            if (segment_model == '1' or segment_model == '2'):
+                print('INITIALIZING VECTORIZATION')
+                resized_images, resized_images_base64 = image_resizer.procesar_imagenes(image_files)
+                print('VECTORIZATION FINISHED')
+            else:
+                resized_images = image_files
+                resized_images_base64 = image_resizer.convert_to_base64(image_files)
 
             print('segment_model: ' + segment_model)
 
@@ -52,7 +54,11 @@ def evaluate_images(request):
             elif segment_model == '2':
                 skimage_segmenter = SkimageSegmenter()
                 segmented_images = skimage_segmenter.segment_images(resized_images)
-                segment_type = 'Skimage'
+                segment_type = 'ScikitImage'
+            elif segment_model == '3':
+                unet_segmenter = UnetImageSegmenter()
+                segmented_images = unet_segmenter.segment_images(resized_images)
+                segment_type = 'UNet'
             else:
                 return HttpResponse("Invalid segmentation model param", status=400)
             print('SEGMENTATION FINISHED')

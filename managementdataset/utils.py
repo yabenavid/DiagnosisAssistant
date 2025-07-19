@@ -36,8 +36,8 @@ def get_images_from_s3(image_names, segment_type='SAM'):
 def get_all_images_from_s3(segment_type='SAM'):
     """
     Descarga todas las imágenes desde S3 y las retorna como objetos que pueden ser procesados con OpenCV.
-    
-    segment_type (str): 'SAM' o 'Skimage'
+
+    segment_type (str): 'SAM', 'ScikitImage' o 'UNet'
     Retorna:
     list: Lista de imágenes como arrays de numpy.
     """
