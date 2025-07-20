@@ -20,4 +20,5 @@ class SegmentationConfig(AppConfig):
 
         print("Cargando modelo SAM...")
         segmenter_instance = SamImageSegmenter()
+        # segmenter_instance = None
         print("Modelo SAM cargado exitosamente.")

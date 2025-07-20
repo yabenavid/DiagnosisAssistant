@@ -16,6 +16,30 @@ def calculate_average(values):
         return 0
     return float(sum(values) / len(values))
 
+def calculate_statistics(values):
+    """
+    Calcula la media, moda y mediana de un array de valores numéricos.
+
+    Parámetros:
+    values (list): Lista de valores numéricos.
+
+    Retorna:
+    dict: Diccionario con 'mean', 'mode' y 'median'.
+    """
+    import statistics
+
+    if not values:
+        return {'mean': 0, 'mode': None, 'median': 0}
+
+    mean = float(sum(values) / len(values))
+    try:
+        mode = float(statistics.mode(values))
+    except statistics.StatisticsError:
+        mode = None  # No hay moda única
+    median = float(statistics.median(values))
+
+    return {'mean': mean, 'mode': mode, 'median': median, 'max': max(values)}
+
 def image_to_base64(image):
     """
     Convierte una imagen de OpenCV a una cadena base64.

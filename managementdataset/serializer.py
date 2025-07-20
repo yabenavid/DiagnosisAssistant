@@ -4,8 +4,9 @@ from .models import ImgDataset
 from django.core.files.base import ContentFile
 from zipfile import ZipFile
 from django.core.files.storage import default_storage
-from segmentation.models import SamImageSegmenter
 from vectorization.models import ImageResizer
+from segmentation.apps import segmenter_instance
+from segmentation.models import SkimageSegmenter, UnetImageSegmenter
 import shutil
 import os
 
@@ -37,6 +38,7 @@ class MultipleImageUploadSerializer(serializers.Serializer):
 
 class ZipImageUploadSerializer(serializers.Serializer):
     zip_file = serializers.FileField()
+    segment_model = serializers.CharField(write_only=True, required=False)
 
     def validate_zip_file(self, value):
         if not value.name.endswith('.zip'):
@@ -45,23 +47,18 @@ class ZipImageUploadSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         zip_file = validated_data['zip_file']
-        images = []
-
-        step = 'cargando modelo de sam'
-        print(step)
-
-        segmenter = SamImageSegmenter()
+        segment_model = validated_data.get('segment_model', '1')  # Default '1'
+        images, cont, ex = [], 0, False
 
         image_resizer = ImageResizer()
-
-        step = 'antes del with'
-        print(step)
+        unet_segmenter = UnetImageSegmenter()
 
         try:
             with ZipFile(zip_file, 'r') as zip_ref:
                 print("antes del loop")
                 for file_name in zip_ref.namelist():
-                    print('nombre de archivo: ' + file_name)
+                    cont = cont + 1
+                    print(f'>>>>Imagen {cont} | Nombre: {file_name}')
                     if file_name.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
                         image_file = zip_ref.read(file_name)
                         image_content = ContentFile(image_file, name=file_name)
@@ -69,9 +66,13 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         print('INITIALIZING VECTORIZATION')
                         step = 'vectorizando imagen: ' + file_name
                         print(step)
+
                         # VECTORIZAR
-                        resized_images = image_resizer.procesar_imagenes([image_content])
-                        print('VECTORIZATION FINISHED')
+                        if segment_model == '1' or segment_model == '2':
+                            resized_images, resized_images_base64 = image_resizer.procesar_imagenes([image_content])
+                            print('VECTORIZATION FINISHED')
+                        else:
+                            resized_images = [image_content]  # No resizing for UNet
 
                         resized_image = resized_images[0]
                         original_path = default_storage.save("uploads/" + resized_image.name, ContentFile(resized_image.read()))
@@ -80,16 +81,30 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         print('INITIALIZING SEGMENTATION')
                         step = 'segmentando imagen: ' + resized_image.name
                         print(step)
+
+                        print('segment_model: ' + segment_model)
                         
-                        segmented_images = segmenter.segment_images(resized_images, original_path)
+                        if segment_model == '1':
+                            segmented_images = segmenter_instance.segment_images(resized_images, original_path)
+                            segment_type = 'SAM'
+                        elif segment_model == '2':
+                            skimage_segmenter = SkimageSegmenter()
+                            segmented_images = skimage_segmenter.segment_images(resized_images)
+                            segment_type = 'ScikitImage'
+                        elif segment_model == '3':
+                            segmented_images = unet_segmenter.segment_images(resized_images)
+                            segment_type = 'UNet'
+                        else:
+                            raise Exception("Invalid segmentation model param (must be '1', '2' or '3')")
+
                         print('SEGMENTATION FINISHED')
 
                         step = 'guardando instancia en DB'
                         print(step)
 
-                        print(type(segmented_images[0]))
-
-                        img_instance = ImgDataset(image=segmented_images[0])
+                        img_instance = ImgDataset()
+                        img_instance.segment_type = segment_type  # Temp attribute
+                        img_instance.image = segmented_images[0]
                         img_instance.save()
 
                         step = "Extrayendo keypoints y descriptores"
@@ -99,7 +114,8 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         img_instance.extract_and_save_features(default_storage.path(original_path))
                         images.append(img_instance)
         except Exception as e:
-            print(f'Failed reading, segmenting or saving the image. Reason: {e}')
+            ex = f'Failed reading, segmenting or saving the image. Reason: {e}'
+            print(ex)
 
         # limpiar carpeta uploads
         step = 'limpiando carpeta uploads'
@@ -114,4 +130,8 @@ class ZipImageUploadSerializer(serializers.Serializer):
                     shutil.rmtree(file_path)
             except Exception as e:
                 print(f'Failed to delete {file_path}. Reason: {e}')
+        if ex:
+            raise Exception(
+                f"Error al procesar el archivo ZIP. Asegúrate de que contenga imágenes válidas. Error interno: {ex}"
+            )
         return images

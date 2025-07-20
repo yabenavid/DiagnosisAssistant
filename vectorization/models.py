@@ -78,3 +78,13 @@ class ImageResizer:
             imagenes_procesadas.append(processed_file)
         
         return imagenes_procesadas, imagenes_base64
+    
+    def convert_to_base64(self, image_files):
+        """
+        Convierte una lista de archivos de imagen a base64.
+        """
+        result = []
+        for file in image_files:
+            img_base64 = pil_image_to_base64(Image.open(file).convert("RGB"))
+            result.append(img_base64)
+        return result
