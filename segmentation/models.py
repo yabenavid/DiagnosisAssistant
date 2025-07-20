@@ -431,8 +431,7 @@ class UnetImageSegmenter:
     def segment_images(self, image_files):
         # Crear instancia del modelo
         model = UNet(in_channels=3, out_channels=1)
-
-        model_path = os.path.join(os.path.dirname(__file__), "trained_models", "unet_stomach_cancer_best.pth")
+        model_path = os.path.join(os.path.dirname(__file__), "trained_models", "unet_stomach_cancer_model.pth")
         model.load_state_dict(torch.load(model_path, weights_only=True))
 
         model.eval()
