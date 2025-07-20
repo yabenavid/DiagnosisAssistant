@@ -156,11 +156,11 @@ const Diagnostic = () => {
                                 selectedOption={selectedOption}
                                 setSelectedOption={setSelectedOption}
                             />
-                            <h4>Seleccione un tipo de métrica similitud </h4><br />
+                            {/* <h4>Seleccione un tipo de métrica similitud </h4><br />
                             <SimilarityTypeSelector
                                 selectedOptionSimilarity={selectedOption}
                                 setSelectedOptionSimilarity={setSelectedOption}
-                            />
+                            /> */}
                             <h4>Seleccione la carpeta con imágenes</h4>
                             <div className="action-buttons">
                                 <button

@@ -24,6 +24,15 @@ const SegmentationTypeSelector = ({ selectedOption, setSelectedOption }) => {
                     />
                     Scikit-Image
                 </label>
+                 <label>
+                    <input
+                        type="radio"
+                        value="2"
+                        checked={selectedOption === "2"}
+                        onChange={(e) => setSelectedOption(e.target.value)}
+                    />
+                    U-Net
+                </label>
             </div>
         </div>
     );
