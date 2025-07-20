@@ -48,6 +48,7 @@ def evaluate_images(request):
             print('segment_model: ' + segment_model)
 
             print('INITIALIZING SEGMENTATION')
+            elevation_maps = None
             if segment_model == '1':
                 segmented_images = segmenter_instance.segment_images(resized_images)
                 segment_type = 'SAM'
@@ -57,7 +58,7 @@ def evaluate_images(request):
                 segment_type = 'ScikitImage'
             elif segment_model == '3':
                 unet_segmenter = UnetImageSegmenter()
-                segmented_images = unet_segmenter.segment_images(resized_images)
+                segmented_images, elevation_maps = unet_segmenter.segment_images(resized_images)
                 segment_type = 'UNet'
             else:
                 return HttpResponse("Invalid segmentation model param", status=400)
@@ -78,7 +79,7 @@ def evaluate_images(request):
             doctor_name = f"{doctor.name} {doctor.last_name}"
 
             print('GENERATING PDF')
-            pdf_content = PDFGenerator.generate_similarity_report(result, resized_images_base64, doctor_name)
+            pdf_content = PDFGenerator.generate_similarity_report(result, resized_images_base64, doctor_name, elevation_maps=elevation_maps)
             
             print('SAVING PDF IN S3')
             storage = HistoryStorage()
