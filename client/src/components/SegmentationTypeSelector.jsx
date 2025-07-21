@@ -27,8 +27,8 @@ const SegmentationTypeSelector = ({ selectedOption, setSelectedOption }) => {
                  <label>
                     <input
                         type="radio"
-                        value="2"
-                        checked={selectedOption === "2"}
+                        value="3"
+                        checked={selectedOption === "3"}
                         onChange={(e) => setSelectedOption(e.target.value)}
                     />
                     U-Net
