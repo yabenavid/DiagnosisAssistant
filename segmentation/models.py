@@ -17,6 +17,7 @@ from scipy.ndimage import maximum_filter
 from .UNet import UNet
 import torchvision.transforms as T
 from skimage.morphology import remove_small_objects, remove_small_holes
+import base64
 
 class SamImageSegmenter:
     def __init__(self):
@@ -429,72 +430,57 @@ class SkimageSegmenter:
 class UnetImageSegmenter:
     
     def segment_images(self, image_files):
-        # Crear instancia del modelo
         model = UNet(in_channels=3, out_channels=1)
         model_path = os.path.join(os.path.dirname(__file__), "trained_models", "unet_stomach_cancer_model.pth")
         model.load_state_dict(torch.load(model_path, weights_only=True))
-
         model.eval()
+
         segmented_images = []
+        elevation_maps_base64 = []
 
         for image_file in image_files:
-            # Guardar temporalmente el archivo si es un ContentFile
             if isinstance(image_file, ContentFile):
                 temp_file_path = default_storage.save(f"temp/{image_file.name}", image_file)
                 img_path = default_storage.path(temp_file_path)
             else:
                 img_path = image_file
-        
+
             image = Image.open(img_path).convert("RGB")
 
-            # Transformar a tensor
             transform = T.Compose([
-                T.Resize((512, 512)),  # Debe coincidir con el tamaño usado en entrenamiento
+                T.Resize((512, 512)),
                 T.ToTensor(),
-                T.Normalize(mean=[0.8896, 0.7711, 0.9064],
-                            std=[0.1091, 0.1464, 0.0761])
+                T.Normalize(mean=[0.8896, 0.7711, 0.9064], std=[0.1091, 0.1464, 0.0761])
             ])
-
-            input_tensor = transform(image).unsqueeze(0)  # Añade batch dimension (1, C, H, W)
+            input_tensor = transform(image).unsqueeze(0)
 
             with torch.no_grad():
                 pred_mask = model(input_tensor)
 
-            # Convertir a numpy para visualizar
             pred_mask_np = pred_mask.squeeze().numpy()
-            # plt.imshow(pred_mask_np, cmap="gray")
-            # plt.title("Predicción cruda")
-            # plt.colorbar()
+            binary_mask = (pred_mask_np >= 0.3).astype("uint8")
+            binary_mask = self.clean_mask(binary_mask)
 
-            binary_mask = (pred_mask_np >= 0.3).astype("uint8")  # ****
-            binary_mask = self.clean_mask(binary_mask)   # ****
-
-            # plt.figure(figsize=(10, 5))
-            # plt.imshow(binary_mask, cmap="gray")
-            # plt.title("Máscara segmentada")
-            # plt.axis("off")
-
-            # plt.tight_layout()
-            # plt.show()
-
-
-            # Guardar la imagen procesada temporalmente
-            print('>>Guardar la imagen procesada temporalmente')
+            # Guardar imagen segmentada
             output_path = os.path.join(settings.MEDIA_ROOT, f"segmented_{image_file.name}")
             cv2.imwrite(output_path, binary_mask * 255)
 
-            # Leer la imagen procesada y convertirla a ContentFile
             with open(output_path, 'rb') as f:
                 image_data = f.read()
             segmented_image_content = ContentFile(image_data, name=f"segmented_{image_file.name}")
-
             segmented_images.append(segmented_image_content)
-            
-            # Limpiar archivo temporal si fue creado
+
+            # Generar y codificar mapa de elevación
+            elevation_img = (pred_mask_np * 255).astype("uint8")
+            _, buffer = cv2.imencode(".png", elevation_img)
+            elevation_b64 = base64.b64encode(buffer).decode("utf-8")
+            elevation_maps_base64.append(elevation_b64)
+
             if isinstance(image_file, ContentFile):
                 default_storage.delete(temp_file_path)
 
-        return segmented_images
+        return segmented_images, elevation_maps_base64
+
 
     def clean_mask(self, binary_mask):
         # Asegúrate de que sea booleano para skimage
