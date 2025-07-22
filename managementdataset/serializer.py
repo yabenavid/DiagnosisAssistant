@@ -5,8 +5,8 @@ from django.core.files.base import ContentFile
 from zipfile import ZipFile
 from django.core.files.storage import default_storage
 from vectorization.models import ImageResizer
-from segmentation.apps import segmenter_instance
-from segmentation.models import SkimageSegmenter, UnetImageSegmenter
+# from segmentation.apps import segmenter_instance
+from segmentation.models import SkimageSegmenter, UnetImageSegmenter, SamImageSegmenter
 import shutil
 import os
 
@@ -85,6 +85,7 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         print('segment_model: ' + segment_model)
                         
                         if segment_model == '1':
+                            segmenter_instance = SamImageSegmenter()
                             segmented_images = segmenter_instance.segment_images(resized_images, original_path)
                             segment_type = 'SAM'
                         elif segment_model == '2':
