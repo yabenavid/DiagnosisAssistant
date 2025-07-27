@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.PROD
-    ? '/token'
+    ? '/api/v1/token'
     : 'http://127.0.0.1:8000/token';
 
 const loginApi= axios.create({
