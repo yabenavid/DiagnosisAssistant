@@ -2,7 +2,7 @@
 from django.http import HttpResponse, JsonResponse, FileResponse
 from rest_framework.decorators import api_view, authentication_classes
 from segmentation.models import SamImageSegmenter, SkimageSegmenter, UnetImageSegmenter
-from segmentation.apps import segmenter_instance
+# from segmentation.apps import segmenter_instance
 from similaritysearch.models import ImageSimilarity, ImageSimilarityResNet
 from vectorization.models import ImageResizer
 from .pdf_service import PDFGenerator
@@ -50,6 +50,7 @@ def evaluate_images(request):
             print('INITIALIZING SEGMENTATION')
             elevation_maps = None
             if segment_model == '1':
+                segmenter_instance = SamImageSegmenter()
                 segmented_images = segmenter_instance.segment_images(resized_images)
                 segment_type = 'SAM'
             elif segment_model == '2':
