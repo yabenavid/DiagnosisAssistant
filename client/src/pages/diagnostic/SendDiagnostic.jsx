@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { sendEmail } from "../../api/diagnostic/senddiagnostic.api";
 import { FcFeedback } from "react-icons/fc";
-import '/src/styles/diagnostic/Diagnostic.css';
+import '/src/styles/diagnostic/diagnostic.css';
 import { useAuth } from "../../context/AuthContext";
 
 export const SendDiagnostic = () => {
