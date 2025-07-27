@@ -29,7 +29,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['3.141.12.232', 'localhost']
+ALLOWED_HOSTS = ['3.22.229.96', 'localhost']
 
 # Application definition
 
