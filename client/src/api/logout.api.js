@@ -2,8 +2,8 @@ import axios from 'axios';
 import { getAuthHeadersJson } from '../hooks/Authorization';
 
 const API_BASE_URL = import.meta.env.PROD
-    ? '/api/v1/logout'
-    : 'http://127.0.0.1:8000/logout';
+    ? '/api/v1/logout/'
+    : 'http://127.0.0.1:8000/api/v1/logout/';
 
 const loginApi = (token) => axios.create({
     baseURL: API_BASE_URL,
