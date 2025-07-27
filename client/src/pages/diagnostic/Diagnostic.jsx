@@ -5,7 +5,7 @@ import { handleSelectFolderDiagnostic } from "../../hooks/UploadImages";
 import { useNavigate } from "react-router-dom";
 import { SegmentImages } from "../../api/diagnostic/diagnostic.api";
 import { FcFeedback, FcFolder, FcFinePrint, FcRefresh } from "react-icons/fc";
-import '/src/styles/diagnostic/Diagnostic.css';
+import '/src/styles/diagnostic/diagnostic.css';
 import { useAuth } from "../../context/AuthContext";
 
 const Diagnostic = () => {
