@@ -21,12 +21,12 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('managementdataset.urls')),
-    path('', include('managementdoctor.urls')),
-    path('', include('managementhospital.urls')),
+    path('api/v1/', include('managementdataset.urls')),
+    path('api/v1/', include('managementdoctor.urls')),
+    path('api/v1/', include('managementhospital.urls')),
     path('api/v1/', include('managementpacient.urls')),
-    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),  # Custom login
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),  # Refresh token
-    path('logout/', LogoutView.as_view(), name ='logout'),  # Logout
-    path('', include('similaritysearch.urls'))
+    path('api/v1/', include('similaritysearch.urls')),
+    path('api/v1/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/v1/logout/', LogoutView.as_view(), name ='logout')
 ]
