@@ -1,8 +1,12 @@
 import axios from 'axios'
 import { getAuthHeaders, getAuthHeadersJson } from '../../hooks/Authorization';
 
+const API_BASE_URL = import.meta.env.PROD
+    ? '/api/v1/doctors'
+    : 'http://127.0.0.1:8000/api/v1/doctors';
+
 const doctorApi = (token) => axios.create({
-    baseURL: 'http://127.0.0.1:8000/api/v1/doctors',
+    baseURL: API_BASE_URL,
     ...getAuthHeadersJson(token)
 })
 
