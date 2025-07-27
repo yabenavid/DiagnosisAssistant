@@ -10,6 +10,6 @@ urlpatterns = [
     path('', views.index),
     path('hello/<str:username>', views.hello),
     path('about/', views.about),
-    path('api/v1/datasets/', include(router.urls)),
-    path('api/v1/datasets/count/', views.DatasetView.as_view({'get': 'count'}), name='dataset-count')
+    path('datasets/', include(router.urls)),
+    path('datasets/count/', views.DatasetView.as_view({'get': 'count'}), name='dataset-count')
 ]
