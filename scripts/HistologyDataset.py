@@ -24,6 +24,6 @@ class HistologyDataset(Dataset):
 
         image = self.transform(image)
         mask = T.ToTensor()(mask)
-        mask = (mask > 0.5).float()   # nuevo ajuste
+        mask = (mask > 0.5).float()
 
         return image, mask

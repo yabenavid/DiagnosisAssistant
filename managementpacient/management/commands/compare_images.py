@@ -6,16 +6,14 @@ from segmentation.models import SamImageSegmenter, SkimageSegmenter, UnetImageSe
 from similaritysearch.models import ImageSimilarityResNet
 
 class Command(BaseCommand):
-    help = 'Procesa imágenes de una carpeta, las segmenta y ejecuta métricas, exportando los resultados a un CSV.'
+    help = 'Command to compare images and generate a similarity report.'
 
     def handle(self, *args, **options):
-        # --- Configura aquí las rutas y parámetros ---
         input_folder = r'C:\Users\yefer\OneDrive\Escritorio\imagenes_test\imagenesNoCancerTestReducida'
-        segment_model = '2'  # '1' para SAM, '2' para Skimage , '3' para unet
+        segment_model = '2'  # '1' SAM, '2' Skimage, '3' UNet
         output_csv = r'C:\Users\yefer\OneDrive\Escritorio\resultado_metricas.csv'
         dataset_folder = r'C:\Users\yefer\OneDrive\Escritorio\imagenes_test\bancoskimage2'
 
-        # --- Leer imágenes de la carpeta ---N
         print('Leyendo imágenes de la carpeta...')
         image_files = []
         for filename in os.listdir(input_folder):
@@ -26,7 +24,7 @@ class Command(BaseCommand):
                     uploaded_file = SimpleUploadedFile(
                         name=filename,
                         content=file_bytes,
-                        content_type='image/png'  # Cambia si necesitas otro tipo
+                        content_type='image/png'
                     )
                     image_files.append(uploaded_file)
 
@@ -60,7 +58,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.ERROR('segment_model debe ser "1" (SAM) o "2" (Skimage)'))
             return
 
-        # --- Similaridad y exportar CSV ---
+        # --- Similarity and export to CSV ---
         print('Calculando similitud y exportando a CSV...')
         similarity_checker = ImageSimilarityResNet()
         similarity_checker.run_all_metrics_and_export_csv(

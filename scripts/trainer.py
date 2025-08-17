@@ -4,28 +4,27 @@ import torch
 import torch.optim as optim
 from UNet import UNet
 from HistologyDataset import HistologyDataset
-from DiceLoss import BCEDiceLoss, dice_score # nuevo ajuste
+from DiceLoss import BCEDiceLoss, dice_score
 import glob
 
-# Rutas
 image_paths = sorted(glob.glob("dataset/images/*.png"))
 mask_paths = sorted(glob.glob("dataset/masks/*.png"))
 
-# Modelo, pérdida y optimizador
+# Model, loss and optimizer
 model = UNet()
-criterion = BCEDiceLoss() # nuevo ajuste
+criterion = BCEDiceLoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-# Dataset y loader
+# Dataset and loader
 train_dataset = HistologyDataset(image_paths, mask_paths)
-train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True) # nuevo ajuste
+train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
 # Early stopping
 patience = 10
 best_dice = 0
 epochs_without_improvement = 0
 
-# Entrenamiento
+# Training
 for epoch in range(10):
     model.train()
     epoch_loss = 0

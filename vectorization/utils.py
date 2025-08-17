@@ -5,12 +5,12 @@ from PIL import Image
 
 def pil_image_to_base64(pil_image, format='PNG'):
     """
-    Convierte una imagen PIL a base64 sin prefijo
+    Converts a PIL image to base64 without prefix
     Args:
-        pil_image: Imagen en formato PIL.Image
-        format: Formato de imagen (PNG por defecto)
+        pil_image: Image in PIL.Image format
+        format: Image format (PNG by default)
     Returns:
-        str: Cadena base64 sin prefijo
+        str: Base64 string without prefix
     """
     buffered = BytesIO()
     pil_image.save(buffered, format=format)

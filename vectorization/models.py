@@ -10,68 +10,58 @@ class ImageResizer:
 
     def procesar_imagenes(self, image_files, target_width=1024, target_height=1024):
         """
-        Procesa una lista de archivos de imagen aplicando:
-        1. Reducción del tamaño sin perder calidad.
-        2. Mejora de calidad mediante afilado.
-        3. Estandarización de dimensiones (canvas fijo).
-        
-        Se retorna un array de ContentFile, que incluye el atributo 'name' y el método read(),
-        permitiendo que segment_images las procese sin inconvenientes.
-        
-        Parámetros:
-        image_files (list): Lista de objetos UploadedFile.
-        target_width (int): Ancho estándar de salida.
-        target_height (int): Alto estándar de salida.
-        
-        Retorna:
-        list: Array de objetos ContentFile con las imágenes procesadas.
+        Process a list of image files by applying:
+        1. Reducing size without losing quality.
+        2. Improving quality through sharpening.
+        3. Standardizing dimensions (fixed canvas).
+
+        Returns an array of ContentFile, which includes the 'name' attribute and the read() method,
+        allowing segment_images to process them without issues.
+
+        Parameters:
+        image_files (list): List of UploadedFile objects.
+        target_width (int): Standard output width.
+        target_height (int): Standard output height.
+
+        Returns:
+        list: Array of ContentFile objects with the processed images.
         """
         imagenes_procesadas = []
         imagenes_base64 = []
         img_base64 = None
         
         for file in image_files:
-            # Leer el contenido en bytes de la imagen
-            print('Leer el contenido en bytes de la imagen')
             file_bytes = file.read()
             
-            # Abrir la imagen usando Pillow y convertirla a RGB
-            print('>>Abrir la imagen usando Pillow y convertirla a RGB')
+            # Open the image using Pillow and convert it to RGB
             imagen = Image.open(BytesIO(file_bytes)).convert("RGB")
-            
-            # Mejorar la calidad aplicando un filtro de afilado
-            print('>>Mejorar la calidad aplicando un filtro de afilado')
+
+            # Improve the quality by applying a sharpening filter
             imagen_mejorada = imagen.filter(ImageFilter.SHARPEN)
-            
-            # Calcular el factor de escala para ajustar la imagen al canvas sin deformarla
-            print('>>Calcular el factor de escala para ajustar la imagen al canvas sin deformarla')
+
+            # Calculate the scaling factor to adjust the image to the canvas without distortion
             scale = min(target_width / imagen_mejorada.width, target_height / imagen_mejorada.height)
             new_width = int(imagen_mejorada.width * scale)
             new_height = int(imagen_mejorada.height * scale)
-            
-            # Redimensionar la imagen usando un buen filtro de remuestreo (LANCZOS)
-            print('>>Redimensionar la imagen usando un buen filtro de remuestreo (LANCZOS)')
+
+            # Resize the image using a good resampling filter (LANCZOS)
             imagen_redimensionada = imagen_mejorada.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            
-            # Crear un canvas de tamaño fijo (relleno de negro)
-            print('>>Crear un canvas de tamaño fijo (relleno de negro)')
+
+            # Create a fixed-size canvas (black fill)
             canvas = Image.new("RGB", (target_width, target_height), "black")
-            
-            # Calcular los offsets para centrar la imagen redimensionada en el canvas
-            print('>>Calcular los offsets para centrar la imagen redimensionada en el canvas')
+
+            # Calculate the offsets to center the resized image on the canvas
             offset_x = (target_width - new_width) // 2
             offset_y = (target_height - new_height) // 2
-            
-            # Pegar la imagen redimensionada en el canvas
-            print('>>Pegar la imagen redimensionada en el canvas')
+
+            # Paste the resized image onto the canvas
             canvas.paste(imagen_redimensionada, (offset_x, offset_y))
 
-            # Convertir a base64
+            # Convert to base64
             img_base64 = pil_image_to_base64(canvas)
             imagenes_base64.append(img_base64)
-            
-            # Guardar la imagen procesada en un buffer y crear un ContentFile
-            print('>>Guardar la imagen procesada en un buffer y crear un ContentFile')
+
+            # Save the processed image to a buffer and create a ContentFile
             buffer = BytesIO()
             canvas.save(buffer, format="PNG")
             processed_file = ContentFile(buffer.getvalue(), name=file.name)
@@ -81,7 +71,7 @@ class ImageResizer:
     
     def convert_to_base64(self, image_files):
         """
-        Convierte una lista de archivos de imagen a base64.
+        Converts a list of image files to base64.
         """
         result = []
         for file in image_files:

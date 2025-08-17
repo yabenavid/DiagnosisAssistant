@@ -1,9 +1,9 @@
-# Script para calcular los valores de normalización (media y desviación estándar) de un dataset de imágenes para el entrenamiento de unet
+# Script to calculate the normalization values (mean and standard deviation) of an image dataset for unet training
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import torch
 
-# Dataset temporal para obtener estadísticas
+# Temporary dataset to obtain statistics
 transform = transforms.Compose([
     transforms.Resize((512, 512)),
     transforms.ToTensor()

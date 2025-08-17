@@ -4,13 +4,13 @@ import os
 
 def calculate_average(values):
     """
-    Calcula el promedio de un array de valores.
+    Calculates the average of an array of values.
 
-    Parámetros:
-    values (list): Lista de valores numéricos.
+    Parameters:
+    values (list): List of numeric values.
 
-    Retorna:
-    float: El promedio de los valores.
+    Returns:
+    float: The average of the values.
     """
     if not values:
         return 0
@@ -18,13 +18,13 @@ def calculate_average(values):
 
 def calculate_statistics(values):
     """
-    Calcula la media, moda y mediana de un array de valores numéricos.
+    Calculates the mean, mode, and median of an array of numeric values.
 
-    Parámetros:
-    values (list): Lista de valores numéricos.
+    Parameters:
+    values (list): List of numeric values.
 
-    Retorna:
-    dict: Diccionario con 'mean', 'mode' y 'median'.
+    Returns:
+    dict: Dictionary with 'mean', 'mode', and 'median'.
     """
     import statistics
 
@@ -35,14 +35,14 @@ def calculate_statistics(values):
     try:
         mode = float(statistics.mode(values))
     except statistics.StatisticsError:
-        mode = None  # No hay moda única
+        mode = None  # No unique mode
     median = float(statistics.median(values))
 
     return {'mean': mean, 'mode': mode, 'median': median, 'max': max(values)}
 
 def image_to_base64(image):
     """
-    Convierte una imagen de OpenCV a una cadena base64.
+    Converts an OpenCV image to a base64 string.
     """
     _, buffer = cv2.imencode('.jpg', image)
     image_base64 = base64.b64encode(buffer).decode('utf-8')
@@ -50,13 +50,13 @@ def image_to_base64(image):
 
 def get_diagnosis_message(percentage):
     """
-    Retorna un mensaje de diagnóstico basado en el porcentaje de similitud.
+    Returns a diagnostic message based on the similarity percentage.
 
-    Parámetros:
-    percentage (float): Porcentaje de similitud.
+    Parameters:
+    percentage (float): Similarity percentage.
 
-    Retorna:
-    str: Mensaje de diagnóstico.
+    Return:
+    str: Diagnostic message.
     """
     if percentage >= 0.9:
         return "Alta probabilidad de coincidencia. Las características de la imagen analizada presentan una similitud significativa con patrones asociados a cáncer de estómago. Se recomienda una evaluación médica inmediata."

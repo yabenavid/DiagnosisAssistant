@@ -2,7 +2,7 @@
 from django.http import HttpResponse, JsonResponse, FileResponse
 from rest_framework.decorators import api_view, authentication_classes
 from segmentation.models import SamImageSegmenter, SkimageSegmenter, UnetImageSegmenter
-# from segmentation.apps import segmenter_instance
+from segmentation.apps import segmenter_instance
 from similaritysearch.models import ImageSimilarity, ImageSimilarityResNet
 from vectorization.models import ImageResizer
 from .pdf_service import PDFGenerator
@@ -45,12 +45,10 @@ def evaluate_images(request):
                 resized_images = image_files
                 resized_images_base64 = image_resizer.convert_to_base64(image_files)
 
-            print('segment_model: ' + segment_model)
-
             print('INITIALIZING SEGMENTATION')
             elevation_maps = None
             if segment_model == '1':
-                segmenter_instance = SamImageSegmenter()
+                # segmenter_instance = SamImageSegmenter()
                 segmented_images = segmenter_instance.segment_images(resized_images)
                 segment_type = 'SAM'
             elif segment_model == '2':
@@ -70,7 +68,7 @@ def evaluate_images(request):
             result = similarity_checker_resnet.calculate_similarity(segmented_images, segment_type)
             print('SIMILARITY FINISHED')
 
-            # Convertir el resultado a JSON si es necesario
+            # Convert result to JSON if necessary
             if isinstance(result, str):
                 try:
                     result = json.loads(result)
@@ -82,21 +80,19 @@ def evaluate_images(request):
             print('GENERATING PDF')
             pdf_content = PDFGenerator.generate_similarity_report(result, resized_images_base64, doctor_name, elevation_maps=elevation_maps)
             
-            print('SAVING PDF IN S3')
+            print('Storing PDF in S3')
             storage = HistoryStorage()
             current_datetime = datetime.now().strftime("%Y%m%d-%H%M%S")
             pdf_filename = f"resumen-{current_datetime}.pdf"
 
             s3_key = f"hospital_{hospital.id}/{pdf_filename}"
             storage.save(s3_key, ContentFile(pdf_content))
-            
-            # Crear registro en DB
+
             history_record = History.objects.create(
                 hospital=hospital,
                 s3_pdf_key=s3_key
             )
 
-            # Enviar email al médico
             print('SENDING EMAIL')
             doctor_email = request.user.email
             subject = "Resultados de análisis de imágenes médicas"
@@ -109,8 +105,6 @@ def evaluate_images(request):
                 pdf_content=pdf_content,
                 filename=pdf_filename
             )
-            
-            print('PREPARING RESPONSE')
 
             frontend_results = [
                 {
@@ -176,25 +170,24 @@ def send_report_to_emails(request, report_id):
         try:
             if not request.user.is_authenticated:
                 return HttpResponse("Authentication required", status=401)
-                
-            # Validar que el reporte pertenece al hospital del médico
+
+            # Validate the report belongs to the doctor's hospital
             doctor = Doctor.objects.get(user=request.user)
             hospital = doctor.belong_set.first().hospital
             report = History.objects.get(id=report_id, hospital=hospital)
             
-            # Obtener emails del request
             emails = request.data.get('emails', [])
             if not emails:
                 return HttpResponse("No emails provided", status=400)
-            
-            # Obtener PDF de S3
+
+            # Get PDF from S3
             storage = HistoryStorage()
             if not storage.exists(report.s3_pdf_key):
                 return HttpResponse("PDF not found", status=404)
                 
             pdf_content = storage.open(report.s3_pdf_key).read()
-            
-            # Enviar emails
+
+            # Send emails
             subject = "Resultados de análisis de imágenes médicas (compartido)"
             body = f"El médico {doctor.name} {doctor.last_name} ha compartido este resumen con usted"
             
