@@ -22,19 +22,17 @@ import base64
 class SamImageSegmenter:
     def __init__(self):
         # Load SAM model
+
         # self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        # if self.device == "cuda":
-        #     torch.cuda.empty_cache()
         self.device = 'cpu'
 
         sam_checkpoint = "sam_vit_h.pth"
         model_type = "vit_h"
         
-        # Carga el modelo en CPU primero
+        # Load the SAM model
         self.sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
-        self.sam.to(device=self.device)  # Mueve a CUDA aquí
+        self.sam.to(device=self.device)
         
-        # Opcional: Limpia la caché de CUDA
         if self.device == "cuda":
             torch.cuda.empty_cache()
             
@@ -47,35 +45,29 @@ class SamImageSegmenter:
         for image_file in image_files:
             cont = cont + 1
             print(f'>>Imagen {cont} de {len(image_files)}')
-            # Guardar la imagen temporalmente
+            # Save image temporarily
             if image_path is None:
                 file_path = default_storage.save("uploads/" + image_file.name, ContentFile(image_file.read()))
             else:
                 file_path = image_path
 
-            # Leer la imagen
-            print('>>Leer la imagen')
             img = cv2.imread(default_storage.path(file_path))
             img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-            # Generar máscaras
-            print('>>Generar máscaras')
+            # Generate masks
             masks = self.mask_generator.generate(img_rgb)
 
-            # Aplicar máscara sobre la imagen
-            print('>>Aplicar máscara sobre la imagen')
+            # Apply mask to the image
             mask_image = np.zeros_like(img, dtype=np.uint8)
 
             for mask in masks:
                 segmentation = mask["segmentation"]
-                mask_image[segmentation] = [0, 255, 0]  # Máscara en color verde
+                mask_image[segmentation] = [0, 255, 0]  # Green color
 
-            # Combinar la imagen original con la máscara
-            print('>>Combinar la imagen original con la máscara')
+            # Combine original image with mask
             blended = cv2.addWeighted(img, 0.6, mask_image, 0.4, 0)
 
-            # Guardar la imagen procesada temporalmente
-            print('>>Guardar la imagen procesada temporalmente')
+            # Save processed image temporarily
             output_path = os.path.join(settings.MEDIA_ROOT, f"segmented_{image_file.name}")
             cv2.imwrite(output_path, blended)
 
@@ -90,7 +82,7 @@ class SamImageSegmenter:
             # output_path = os.path.join(settings.MEDIA_ROOT, f"segmented_{image_file.name}")
             # cv2.imwrite(output_path, binary_mask * 255)
 
-            # Leer la imagen procesada y convertirla a ContentFile
+            # Read processed image and convert to ContentFile
             with open(output_path, 'rb') as f:
                 image_data = f.read()
             segmented_image_content = ContentFile(image_data, name=f"segmented_{image_file.name}")
@@ -100,7 +92,7 @@ class SamImageSegmenter:
         return segmented_images
 
     def create_zip(self, segmented_images):
-        # Crear un archivo ZIP con las imágenes segmentadas
+        # Create a ZIP file with the segmented images
         zip_buffer = BytesIO()
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
             for img_path in segmented_images:
@@ -113,13 +105,13 @@ class SkimageSegmenter:
 
     def _preprocess_histological_image(self, img_rgb):
         """
-        Preprocesamiento específico para imágenes histológicas
+        Specific preprocessing for histological images
         """
-        # Convertir a diferentes espacios de color para mejor análisis
+        # Convert to different color spaces for better analysis
         img_hsv = color.rgb2hsv(img_rgb)
         img_gray = color.rgb2gray(img_rgb)
-        
-        # Mejorar contraste usando CLAHE (Contrast Limited Adaptive Histogram Equalization)
+
+        # Improve contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
         img_gray_uint8 = (img_gray * 255).astype(np.uint8)
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
         img_enhanced = clahe.apply(img_gray_uint8) / 255.0
@@ -128,24 +120,24 @@ class SkimageSegmenter:
 
     def _detect_cancer_regions(self, img_enhanced, img_hsv, img_rgb):
         """
-        Detecta regiones potencialmente cancerígenas basándose en características histológicas
+        Detects potentially cancerous regions based on histological features
         """
-        # Análisis de color específico para tejido canceroso
-        # Las células cancerosas tienden a ser más basófilas (azul-púrpura)
+        # Specific color analysis for cancerous tissue
+        # Cancer cells tend to be more basophilic (blue-purple)
         hue = img_hsv[:,:,0]
         saturation = img_hsv[:,:,1]
         value = img_hsv[:,:,2]
-        
-        # Detectar regiones con alta densidad nuclear (más oscuras y azuladas)
+
+        # Detect regions with high nuclear density (darker and more bluish)
         nuclear_mask = (hue > 0.6) & (hue < 0.8) & (saturation > 0.3) & (value < 0.7)
-        
-        # Detectar regiones hipercromáticas (núcleos más densos)
+
+        # Detect hyperchromatic regions (denser nuclei)
         hyperchromatic_mask = img_enhanced < np.percentile(img_enhanced, 25)
         
-        # Combinar máscaras
+        # Combine masks
         potential_cancer = nuclear_mask | hyperchromatic_mask
         
-        # Limpiar ruido con operaciones morfológicas
+        # Cleaning noise with morphological operations
         kernel = morphology.disk(2)
         potential_cancer = morphology.binary_opening(potential_cancer, kernel)
         potential_cancer = morphology.binary_closing(potential_cancer, morphology.disk(3))
@@ -154,65 +146,65 @@ class SkimageSegmenter:
 
     def _find_local_maxima(self, distance_map, min_distance=10, threshold_abs=3):
         """
-        Encuentra máximos locales usando scipy en lugar de skimage.feature
+        Find local maxima using scipy instead of skimage.feature
         """
-        # Crear un filtro de máximo local
+        # Create a local maximum filter
         local_maxima = maximum_filter(distance_map, size=min_distance) == distance_map
-        
-        # Aplicar umbral
+
+        # Apply threshold
         local_maxima = local_maxima & (distance_map > threshold_abs)
-        
-        # Obtener coordenadas de los máximos
+
+        # Get coordinates of the maxima
         coords = np.where(local_maxima)
         
         return coords
 
     def _create_smart_markers(self, img_enhanced, potential_cancer_mask):
         """
-        Crea marcadores inteligentes para watershed controlado
+        Create smart markers for controlled watershed
         """
         markers = np.zeros_like(img_enhanced, dtype=np.int32)
-        
-        # 1. Marcadores para fondo (regiones muy claras)
+
+        # Markers for background (very light regions)
         background_threshold = np.percentile(img_enhanced, 85)
         background_mask = img_enhanced > background_threshold
-        
-        # Limpiar el fondo
+
+        # Clean the background
         background_mask = morphology.binary_opening(background_mask, morphology.disk(5))
         background_mask = morphology.remove_small_objects(background_mask, min_size=100)
-        
-        # 2. Marcadores para regiones cancerosas potenciales
-        # Aplicar distance transform para encontrar centros de regiones
+
+        # Markers for potential cancer regions
+        # Apply distance transform to find centers of regions
         cancer_distance = ndimage.distance_transform_edt(potential_cancer_mask)
-        
-        # Encontrar máximos locales como centros de regiones cancerosas
+
+        # Find local maxima as centers of cancerous regions
         cancer_peaks = self._find_local_maxima(cancer_distance, min_distance=10, threshold_abs=3)
-        
-        # 3. Marcadores para tejido normal (valores intermedios)
+
+        # Markers for normal tissue (intermediate values)
         normal_tissue_mask = (~potential_cancer_mask) & (~background_mask)
         normal_distance = ndimage.distance_transform_edt(normal_tissue_mask)
         normal_peaks = self._find_local_maxima(normal_distance, min_distance=15, threshold_abs=5)
-        
-        # Asignar etiquetas a los marcadores
+
+        # Assign labels to the markers
         marker_id = 1
-        
-        # Marcar fondo
+
+        # Mark background
         markers[background_mask] = marker_id
         marker_id += 1
-        
-        # Marcar centros de regiones cancerosas
+
+        # Mark centers of cancerous regions
         if len(cancer_peaks[0]) > 0:
             for i in range(len(cancer_peaks[0])):
                 y, x = cancer_peaks[0][i], cancer_peaks[1][i]
-                # Crear una pequeña región alrededor del pico
+                # Create a small region around the peak
                 y_start, y_end = max(0, y-2), min(img_enhanced.shape[0], y+3)
                 x_start, x_end = max(0, x-2), min(img_enhanced.shape[1], x+3)
                 markers[y_start:y_end, x_start:x_end] = marker_id
                 marker_id += 1
         
-        # Marcar centros de tejido normal (con menos marcadores)
+        # Mark normal tissue centers (with fewer markers)
         if len(normal_peaks[0]) > 0:
-            # Limitar el número de marcadores de tejido normal
+            # Limit the number of normal tissue markers
             n_normal_markers = min(len(normal_peaks[0]), len(cancer_peaks[0]) // 2 + 1)
             for i in range(n_normal_markers):
                 y, x = normal_peaks[0][i], normal_peaks[1][i]
@@ -220,88 +212,51 @@ class SkimageSegmenter:
                 x_start, x_end = max(0, x-3), min(img_enhanced.shape[1], x+4)
                 markers[y_start:y_end, x_start:x_end] = marker_id
                 marker_id += 1
-
-        # plt.figure(figsize=(8, 6))
-        # plt.title("Marcadores inteligentes")
-        # plt.imshow(markers, cmap="nipy_spectral")
-        # plt.axis("off")
-        # plt.show()
         
         return markers
 
     def _create_gradient_map(self, img_enhanced):
         """
-        Crea un mapa de gradientes más apropiado para tejidos
-        Además, muestra las imágenes generadas por los filtros Scharr, Sobel y Gaussian.
+        Create a gradient map more suitable for tissues
+        Additionally, display the images generated by the Scharr, Sobel, and Gaussian filters.
         """
         import matplotlib.pyplot as plt
 
-        # Combinar diferentes filtros de gradiente
+        # Combine different gradient filters
         scharr_grad = filters.scharr(img_enhanced)
         sobel_grad = filters.sobel(img_enhanced)
-        
-        # Promedio ponderado de gradientes
+
+        # Weighted average of gradients
         gradient_map = 0.6 * scharr_grad + 0.4 * sobel_grad
-        
-        # Suavizar ligeramente para reducir ruido
+
+        # Slightly smooth to reduce noise
         gaussian_grad = filters.gaussian(gradient_map, sigma=0.5)
-
-        # Mostrar resultados de los filtros
-        # plt.figure(figsize=(8, 6))
-        # # plt.subplot(1, 4, 1)
-        # plt.imshow(img_enhanced, cmap='gray')
-        # plt.title('Imagen Mejorada')
-        # plt.axis('off')
-        # plt.show()
-
-        # # plt.subplot(1, 4, 2)
-        # plt.figure(figsize=(8, 6))
-        # plt.imshow(scharr_grad, cmap='magma')
-        # plt.title('Filtro Scharr')
-        # plt.axis('off')
-        # plt.show()
-
-        # # plt.subplot(1, 4, 3)
-        # plt.figure(figsize=(8, 6))
-        # plt.imshow(sobel_grad, cmap='magma')
-        # plt.title('Filtro Sobel')
-        # plt.axis('off')
-        # plt.show()
-
-        # # plt.subplot(1, 4, 4)
-        # plt.figure(figsize=(8, 6))
-        # plt.imshow(gaussian_grad, cmap='magma')
-        # plt.title('Filtro Gaussian')
-        # plt.axis('off')
-        # plt.show()
-
-        # plt.tight_layout()
 
         return gaussian_grad
 
     def _post_process_segmentation(self, segmentation, potential_cancer_mask, min_region_size=50):
         """
-        Post-procesamiento para limpiar la segmentación
+        Post-processing to clean up the segmentation
         """
-        # Remover regiones muy pequeñas
+        # Remove very small regions
         cleaned_segmentation = morphology.remove_small_objects(
             segmentation.astype(bool), min_size=min_region_size
         ).astype(segmentation.dtype)
-        
-        # Re-etiquetar regiones
+
+        # Re-label regions
         labeled_segmentation = measure.label(cleaned_segmentation)
-        
-        # Filtrar regiones que no coinciden con áreas potencialmente cancerosas
+
+        # Filter regions that do not overlap with potential cancer areas
         final_segmentation = np.zeros_like(labeled_segmentation)
         region_id = 1
         
         for region in measure.regionprops(labeled_segmentation):
-            # Calcular overlap con mask de cáncer potencial
+            # Calculate overlap with potential cancer mask
             region_mask = labeled_segmentation == region.label
             overlap = np.sum(region_mask & potential_cancer_mask) / np.sum(region_mask)
-            
-            # Solo mantener regiones con suficiente overlap con áreas cancerosas potenciales
-            if overlap > 0.3:  # Al menos 30% de overlap
+
+            # Only keep regions with sufficient overlap with potential cancer areas
+            if overlap > 0.3:  # At least 30% overlap
                 final_segmentation[region_mask] = region_id
                 region_id += 1
         
@@ -311,7 +266,7 @@ class SkimageSegmenter:
         segmented_images = []
 
         for image_file in image_files:
-            # Guardar temporalmente el archivo si es un ContentFile
+            # Save image temporarily
             if isinstance(image_file, ContentFile):
                 temp_file_path = default_storage.save(f"temp/{image_file.name}", image_file)
                 img_path = default_storage.path(temp_file_path)
@@ -321,68 +276,48 @@ class SkimageSegmenter:
             print('>>Cargando y preprocesando imagen')
             imgn = Image.open(img_path)
             
-            # Convertir a RGB si tiene canal alfa (RGBA)
+            # Convert to RGB if it has alpha channel (RGBA)
             if imgn.mode == 'RGBA':
                 imgn = imgn.convert('RGB')
                 
             img_rgb = np.array(imgn)
-            
-            # Preprocesamiento específico para histología
+
+            # Preprocessing specific to histology
             img_enhanced, img_hsv, img_gray = self._preprocess_histological_image(img_rgb)
             
-            print('>>Detectando regiones potencialmente cancerosas')
             potential_cancer_mask = self._detect_cancer_regions(img_enhanced, img_hsv, img_rgb)
             
-            print('>>Creando marcadores inteligentes')
             markers = self._create_smart_markers(img_enhanced, potential_cancer_mask)
             
-            print('>>Calculando mapa de gradientes optimizado')
             gradient_map = self._create_gradient_map(img_enhanced)
             
-            print('>>Aplicando Watershed controlado por marcadores')
             segmentation = skimage_segmentation.watershed(
                 gradient_map, 
                 markers, 
-                mask=potential_cancer_mask,  # Solo segmentar en áreas de interés
+                mask=potential_cancer_mask,
                 watershed_line=True
             )
-
-            # plt.figure(figsize=(8, 6))
-            # plt.imshow(segmentation, cmap='nipy_spectral')
-            # plt.title('Segmentación con Watershed')
-            # plt.axis('off')
-            # plt.show()
             
             print('>>Post-procesando segmentación')
             final_segmentation = self._post_process_segmentation(
                 segmentation, potential_cancer_mask
             )
             
-            # Crear máscara binaria para todas las regiones segmentadas
+            # Create binary mask for all segmented regions
             binary_segmentation_mask = final_segmentation > 0
-            
-            # Crear visualización final usando el mismo approach que el otro proyecto
-            print('>>Generando imagen de resultado usando cv2.addWeighted')
-            
-            # Convertir imagen original a formato BGR para OpenCV (si es necesario para consistencia)
+
             img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
-            
-            # Crear imagen de máscara similar al otro proyecto
+
             mask_image = np.zeros_like(img_bgr, dtype=np.uint8)
             
-            # Aplicar el mismo color verde del otro proyecto [0, 255, 0]
-            # Convertir de RGB a BGR para OpenCV: [0, 255, 0] -> BGR [0, 255, 0]
-            green_bgr = [0, 255, 0]  # Verde puro en formato BGR (igual al otro proyecto)
+            green_bgr = [0, 255, 0]
             mask_image[binary_segmentation_mask] = green_bgr
-            
-            # Combinar la imagen original con la máscara usando los mismos pesos
-            print('>>Combinar la imagen original con la máscara')
+
+            # Combine the original image with the mask
             blended = cv2.addWeighted(img_bgr, 0.6, mask_image, 0.4, 0)
             
-            # Convertir de vuelta a RGB para matplotlib
             blended_rgb = cv2.cvtColor(blended, cv2.COLOR_BGR2RGB)
             
-            # Mostrar resultado final
             fig, ax = plt.subplots(1, 1, figsize=(10, 8))
             ax.imshow(blended_rgb)
             
@@ -390,7 +325,7 @@ class SkimageSegmenter:
             plt.tight_layout()
             plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
-            # Guardar la segmentación como imagen procesada
+            # Save the segmentation as processed image
             output_filename = f"segmented_{os.path.basename(img_path)}"
             output_path = os.path.join(settings.MEDIA_ROOT, output_filename)
             blended_bgr = cv2.cvtColor(blended_rgb, cv2.COLOR_RGB2BGR)
@@ -414,14 +349,14 @@ class SkimageSegmenter:
             # plt.axis('off')
             # plt.show()
 
-            # Leer la imagen procesada y convertirla a ContentFile
+            # Read processed image and convert to ContentFile
             with open(output_path, 'rb') as f:
                 image_data = f.read()
             segmented_image_content = ContentFile(image_data, name=output_filename)
 
             segmented_images.append(segmented_image_content)
             
-            # Limpiar archivo temporal si fue creado
+            # Clean temporal file
             if isinstance(image_file, ContentFile):
                 default_storage.delete(temp_file_path)
 
@@ -461,7 +396,7 @@ class UnetImageSegmenter:
             binary_mask = (pred_mask_np >= 0.3).astype("uint8")
             binary_mask = self.clean_mask(binary_mask)
 
-            # Guardar imagen segmentada
+            # Save segmented image
             output_path = os.path.join(settings.MEDIA_ROOT, f"segmented_{image_file.name}")
             cv2.imwrite(output_path, binary_mask * 255)
 
@@ -470,7 +405,7 @@ class UnetImageSegmenter:
             segmented_image_content = ContentFile(image_data, name=f"segmented_{image_file.name}")
             segmented_images.append(segmented_image_content)
 
-            # Generar y codificar mapa de elevación
+            # Generate and encode elevation map
             elevation_img = (pred_mask_np * 255).astype("uint8")
             _, buffer = cv2.imencode(".png", elevation_img)
             elevation_b64 = base64.b64encode(buffer).decode("utf-8")
@@ -481,23 +416,20 @@ class UnetImageSegmenter:
 
         return segmented_images, elevation_maps_base64
 
-
     def clean_mask(self, binary_mask):
-        # Asegúrate de que sea booleano para skimage
         mask = binary_mask.astype(bool)
-        # Elimina objetos pequeños (ruido)
+
         mask = remove_small_objects(mask, min_size=500)
-        # Rellena pequeños huecos dentro de las regiones
+
         mask = remove_small_holes(mask, area_threshold=500)
-        # Convierte de nuevo a uint8
+
         mask = mask.astype("uint8")
-        # Aplica cierre morfológico para agrupar regiones cercanas
+        # Apply morphological closing to group nearby regions
         kernel = np.ones((15, 15), np.uint8)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-        # Aplica apertura para suavizar bordes
+        # Apply opening to smooth edges
         kernel2 = np.ones((7, 7), np.uint8)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel2)
-        # Suaviza los bordes con un filtro gaussiano y vuelve a binarizar
+        # Smooth edges with Gaussian filter and binarize again
         mask = cv2.GaussianBlur(mask, (7, 7), 0)
-        # mask = (mask > 0.4).astype("uint8")
         return mask

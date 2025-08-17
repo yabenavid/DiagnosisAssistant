@@ -3,7 +3,7 @@ from managementdataset.serializer import ZipImageUploadSerializer
 import os
 
 class Command(BaseCommand):
-    help = 'Carga imágenes desde un archivo ZIP usando el serializer'
+    help = 'Load images from a ZIP file using the serializer'
 
     def handle(self, *args, **options):
         zip_path = r'C:\Users\yefer\OneDrive\Escritorio\imagenes_test\CARGADATASET\2017-06-09_18.08.16.ndpi.16.17875_16008.2048x2048.zip'

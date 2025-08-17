@@ -17,7 +17,6 @@ def base64_to_compressed_image(base64_str, width, height, quality=95):
     img_data = base64.b64decode(base64_str)
     pil_img = PILImage.open(io.BytesIO(img_data)).convert("RGB")
 
-    # No modificar resolución original
     buffer = io.BytesIO()
     pil_img.save(buffer, format="JPEG", quality=quality)
     buffer.seek(0)
@@ -40,7 +39,7 @@ class PDFGenerator:
 
             story = []
 
-            story.append(Spacer(1, 3 * inch))  # Centrar verticalmente
+            story.append(Spacer(1, 3 * inch))  # Center vertically
             story.append(Paragraph("Reporte de Análisis de Imágenes Médicas", styles['CenterTitle']))
             story.append(PageBreak())
 
@@ -60,7 +59,7 @@ class PDFGenerator:
                     f"Diagnóstico: {result['diagnosis_message']}",
                     styles['Normal']
                 ))
-                analysis_block.append(Spacer(1, 18))  # REDUCIDO de 24 a 18
+                analysis_block.append(Spacer(1, 18))
 
                 try:
                     if apply_compression:
@@ -115,34 +114,31 @@ class PDFGenerator:
                 except Exception as e:
                     analysis_block.append(Paragraph(f"Error al cargar imágenes: {str(e)}", styles['Normal']))
 
-                # Quitar Spacer grande aquí para evitar desborde
-                # analysis_block.append(Spacer(1, 24))  ← eliminar esta línea
-
                 analysis_block.append(Paragraph(
                     f"Evaluación realizada por Dr. {doctor_name}" if doctor_name else "Evaluación realizada por el asistente de diagnóstico OncoJuntas.",
                     styles['Italic']
                 ))
 
-                # Salto de página antes del análisis (excepto el primero)
+                # Page break before analysis (except the first one)
                 if i > 0:
                     story.append(PageBreak())
 
-                # Añadir todo como bloque unido
+                # Add everything as a united block
                 story.append(KeepTogether(analysis_block))
 
             doc.build(story)
             buffer.seek(0)
             return buffer.getvalue()
 
-        # 1. Generar PDF en alta calidad
+        # Generate PDF in high quality
         pdf_data = build_pdf(apply_compression=False)
 
-        # 2. Verificar tamaño
+        # Check size
         if len(pdf_data) > 25 * 1024 * 1024:
-            print("PDF supera 25MB, regenerando con compresión de imágenes...")
+            print("PDF exceeds 25MB, regenerating with image compression...")
             pdf_data = build_pdf(apply_compression=True)
 
-            # 3. Compresión adicional con fitz
+            # Additional compression with fitz
             fd_in, path_in = tempfile.mkstemp(suffix=".pdf")
             fd_out, path_out = tempfile.mkstemp(suffix=".pdf")
             os.close(fd_in)

@@ -23,5 +23,3 @@ class HistorySerializer(serializers.ModelSerializer):
         representation.pop('hospital_id', None)
         representation['created_at'] = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
         return representation
-
-

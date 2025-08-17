@@ -7,7 +7,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import models
 from storages.backends.s3boto3 import S3Boto3Storage
 import cv2
-import zlib  # Importar zlib para la compresión
+import zlib
 
 def image_file_name(instance: models.Model, filename: str) -> str:
     # Temp attribute to decide the final route
@@ -43,39 +43,39 @@ class ImgDataset(models.Model):
 
     def extract_and_save_features(self, image_path):
         """
-        Extrae keypoints y descriptores de la imagen usando SIFT y los guarda en la base de datos.
+        Extract keypoints and descriptors from the image and save them to the database.
         """
-        print("Extrayendo keypoints y descriptores de la imagen...")
+        print("Extracting keypoints and descriptors from the image...")
 
-        # Leer la imagen directamente desde el archivo en memoria
+        # Read the image directly from the file in memory
         image_data = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-        # Extraer keypoints y descriptores con SIFT
+        # Extract keypoints and descriptors with SIFT
         sift = cv2.SIFT_create()
         keypoints, descriptors = sift.detectAndCompute(image_data, None)
 
         if keypoints and descriptors is not None:
-            # Convertir keypoints a un formato serializable
+            # Convert keypoints to a serializable format
             serializable_keypoints = []
             for kp in keypoints:
                 keypoint_dict = {
-                    'pt': kp.pt,          # Punto (x, y)
-                    'size': kp.size,      # Diámetro del keypoint
-                    'angle': kp.angle,    # Orientación
-                    'response': kp.response,  # Respuesta del detector
-                    'octave': kp.octave, # Octava
-                    'class_id': kp.class_id  # ID de clase
+                    'pt': kp.pt,          # Point (x, y)
+                    'size': kp.size,      # Diameter of the keypoint
+                    'angle': kp.angle,    # Orientation
+                    'response': kp.response,
+                    'octave': kp.octave,
+                    'class_id': kp.class_id
                 }
                 serializable_keypoints.append(keypoint_dict)
 
-            # Serializar y comprimir keypoints y descriptores
+            # Serialize and compress keypoints and descriptors
             self.keypoints = zlib.compress(pickle.dumps(serializable_keypoints))
             self.descriptors = zlib.compress(pickle.dumps(descriptors))
             self.save()
 
     def get_keypoints(self):
         """
-        Descomprime y deserializa los keypoints.
+        Decompress and deserialize the keypoints.
         """
         if self.keypoints:
             return pickle.loads(zlib.decompress(self.keypoints))
@@ -83,7 +83,7 @@ class ImgDataset(models.Model):
 
     def get_descriptors(self):
         """
-        Descomprime y deserializa los descriptores.
+        Decompress and deserialize the descriptors.
         """
         if self.descriptors:
             return pickle.loads(zlib.decompress(self.descriptors))
@@ -91,6 +91,6 @@ class ImgDataset(models.Model):
     
     def get_image(self):
         """
-        Retorna la ruta de la imagen en el sistema de archivos.
+        Returns the image path in the file system.
         """
         return self.image.name

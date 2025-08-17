@@ -50,11 +50,11 @@ class DatasetView(viewsets.ModelViewSet):
             )
 
     def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()  # Obtiene el objeto a eliminar
-        # Elimina el archivo de S3 antes de eliminar el registro
+        instance = self.get_object()
+        # Delete image from S3 and database
         if instance.image:
-            instance.image.delete(save=False)  # Borra la imagen en S3
-        instance.delete()  # Elimina el registro de la base de datos
+            instance.image.delete(save=False)
+        instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     # Count images
@@ -62,15 +62,15 @@ class DatasetView(viewsets.ModelViewSet):
 
     def count(self, request, *args, **kwargs):
         try:
-            # Si estamos en modo DEBUG, contamos las imágenes en la base de datos local
+            # If we are in DEBUG mode, count the images in the local database
             if settings.DEBUG:
                 count = ImgDataset.objects.count()
             else:
-                # Si no estamos en modo DEBUG, contamos las imágenes en S3
+                # If we are not in DEBUG mode, count the images in S3
                 storage = ImgDataset().image.storage
                 prefix = "media/dataset/"
 
-                # Listar todos los objetos en el bucket con el prefijo especificado
+                # List all objects in the bucket with the specified prefix
                 s3_objects = storage.bucket.objects.filter(Prefix=prefix)
                 count = sum(1 for _ in s3_objects)
 

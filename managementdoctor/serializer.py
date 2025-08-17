@@ -18,7 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
         if not data.get('username'):
             data['username'] = data.get('email')  # Use email as username
 
-
         # Validate password required in POST requests
         if self.context['request'].method == 'POST':
             if not data.get('password'):
@@ -31,37 +30,6 @@ class UserSerializer(serializers.ModelSerializer):
         representation.pop('username', None)
         representation['password'] = ''
         return representation
-
-# class CredentialSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Credential
-#         fields = ['email', 'password']
-#         extra_kwargs = {
-#             'password': {'required': False, 'allow_blank': True},  # Make that field optional
-#         }
-
-#     def get_fields(self):
-#         fields = super().get_fields()
-#         fields['email'].validators = []  # Disable automatic validation
-#         return fields
-
-#     def to_representation(self, instance):
-#         # Get the original representation
-#         representation = super().to_representation(instance)
-        
-#         # Always remove the 'password' field from the representation
-#         representation.pop('password', None)
-        
-#         return representation
-    
-#     def validate(self, data):   
-#         # Required password field in creation requests
-#         if self.context['request'].method == 'POST':
-#             if not data.get('password'):
-#                 raise serializers.ValidationError({"password": "Este campo es obligatorio."})
-        
-#         return data
-
 
 class DoctorSerializer(serializers.ModelSerializer):
     user = UserSerializer()
@@ -105,13 +73,13 @@ class DoctorSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('user')
         hospital_id = validated_data.pop('hospital')
 
-        # Si no se proporciona un username, usa el email como username
+        # Ensure the user has a username
         if not user_data.get('username'):
             user_data['username'] = user_data['email']
 
         # Create a new django User
         user = User.objects.create_user(
-            username=user_data['email'],  # Usa el username proporcionado o el email
+            username=user_data['email'],  # Use the provided username or email
             email=user_data['email'],
             password=user_data['password']
         )

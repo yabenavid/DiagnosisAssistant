@@ -168,42 +168,16 @@ class ImageSimilarityResNet:
             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
 
-    # def extract_green_mask(self, image_bgr):
-    #     """
-    #     Extrae una máscara binaria de la zona verde (segmentada) en una imagen BGR.
-    #     """
-    #     hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
-    #     lower_green = np.array([40, 40, 40])
-    #     upper_green = np.array([80, 255, 255])
-    #     mask = cv2.inRange(hsv, lower_green, upper_green)
-    #     binary_mask = (mask > 0).astype(np.uint8)
-    #     return binary_mask
-
     def extract_green_mask(self, image_bgr):
         """
-        Extrae una máscara binaria de la zona verde (segmentada) en una imagen BGR.
-        Además, muestra la imagen original y la máscara resultante usando matplotlib.
+        Extracts a binary mask from the (segmented) green area in a BGR image.
+        It also displays the original image and the resulting mask using matplotlib.
         """
         hsv = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2HSV)
         lower_green = np.array([40, 40, 40])
         upper_green = np.array([80, 255, 255])
         mask = cv2.inRange(hsv, lower_green, upper_green)
         binary_mask = (mask > 0).astype(np.uint8)
-
-        # Mostrar la imagen original y la máscara usando matplotlib
-        # import matplotlib.pyplot as plt
-        # imagen_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-        # plt.figure(figsize=(10, 5))
-        # plt.subplot(1, 2, 1)
-        # plt.imshow(imagen_rgb)
-        # plt.title("Imagen Original")
-        # plt.axis("off")
-        # plt.subplot(1, 2, 2)
-        # plt.imshow(binary_mask, cmap="gray")
-        # plt.title("Máscara Verde (Binaria)")
-        # plt.axis("off")
-        # plt.tight_layout()
-        # plt.show()
 
         return binary_mask
 
@@ -226,7 +200,6 @@ class ImageSimilarityResNet:
         for pacient_image in pacient_images:
             percentage_similarity_by_pacient = []
 
-            # Leer imagen paciente
             pacient_image_data = cv2.imdecode(
                 np.frombuffer(pacient_image.read(), np.uint8), cv2.IMREAD_COLOR
             )
@@ -288,7 +261,7 @@ class ImageSimilarityResNet:
 
     def calculate_cosine_similarity(self, features1, features2):
         """
-        Calcula la similitud coseno entre dos vectores de características.
+        Calculates the cosine similarity between two feature vectors.
         """
         features1 = features1.flatten()
         features2 = features2.flatten()
@@ -296,11 +269,11 @@ class ImageSimilarityResNet:
         norm1 = np.linalg.norm(features1)
         norm2 = np.linalg.norm(features2)
         similarity = dot_product / (norm1 * norm2)
-        return float(similarity * 100)  # Asegura que retorna un float
+        return float(similarity * 100)  # Ensures it returns a float
 
     def dice_coefficient_images(self, img1, img2):
         """
-        Calcula el coeficiente de Dice entre dos imágenes binarias.
+        Calculates the Dice coefficient between two binary images.
         """
         if img1.shape != img2.shape:
             raise ValueError("Las imágenes deben tener el mismo tamaño.")
@@ -318,7 +291,7 @@ class ImageSimilarityResNet:
     
     def iou_coefficient_images(self, img1, img2):
         """
-        Calcula el coeficiente IoU (Intersection over Union) entre dos imágenes binarias.
+        Calculates the IoU (Intersection over Union) coefficient between two binary images.
         """
         if img1.shape != img2.shape:
             raise ValueError("Las imágenes deben tener el mismo tamaño.")
@@ -336,10 +309,10 @@ class ImageSimilarityResNet:
 
     def calculate_fid_score(self, imgs1, imgs2, device='cpu'):
         """
-        Calcula el FID entre dos conjuntos de imágenes (tensores PIL o numpy).
+        Calculates the FID between two sets of images (PIL or numpy tensors).
         """
         model = inception_v3(weights=Inception_V3_Weights.DEFAULT, transform_input=False).to(device)
-        model.fc = torch.nn.Identity()  # Usamos la penúltima capa
+        model.fc = torch.nn.Identity()
         model.eval()
 
         def get_activations(imgs):
@@ -350,7 +323,7 @@ class ImageSimilarityResNet:
                 img = transforms.Resize((299, 299))(img)
                 img = transforms.ToTensor()(img).unsqueeze(0)
                 img = transforms.Normalize([0.5]*3, [0.5]*3)(img)
-                processed.append(img.to(device))  # <-- Mueve cada tensor individualmente
+                processed.append(img.to(device))  # <-- Moves each tensor to the specified device
             batch = torch.cat(processed)
             with torch.no_grad():
                 activations = model(batch).cpu().numpy()
@@ -373,33 +346,26 @@ class ImageSimilarityResNet:
 
     def calculate_psnr(self, img1, img2): 
         """
-        Calcula la métrica PSNR (Peak Signal to Noise Ratio) entre dos imágenes a color.
+        Calculates the PSNR (Peak Signal to Noise Ratio) metric between two color images.
         """
         if img1.shape != img2.shape:
             raise ValueError("Las imágenes deben tener el mismo tamaño.")
 
         mse = np.mean((img1.astype(np.float32) - img2.astype(np.float32)) ** 2)
         if mse == 0:
-            return float('inf')  # imágenes idénticas
+            return float('inf')
         max_pixel = 255.0
         psnr = 10 * np.log10((max_pixel ** 2) / mse)
         return psnr
 
     def run_all_metrics_and_export_csv(self, pacient_images, segment_type, output_path="resultados_metricas.csv", dataset_folder=None):
         """
-        Ejecuta todas las métricas disponibles sobre las imágenes del paciente y guarda los resultados en un CSV.
-        Usa imágenes de una carpeta local si dataset_folder está definido.
+        Runs all available metrics on the patient's images and saves the results to a CSV file.
+        Uses images from a local folder if dataset_folder is defined.
         """
-        # for p in pacient_images:
-        #     img = cv2.imdecode(np.frombuffer(p.read(), np.uint8), cv2.IMREAD_COLOR)
-        #     visualizar_mascara_verde(img, self.extract_green_mask, titulo="Paciente 1")
-        #     return
-
-        # return
-        #------------------------------------------------
         csv_rows = []
 
-        # Convertir imágenes a formato reutilizable
+        # Convert images to a reusable format
         pacient_imgs_list = []
         pacient_filenames = []
         for p in pacient_images:
@@ -407,7 +373,7 @@ class ImageSimilarityResNet:
             pacient_imgs_list.append(img)
             pacient_filenames.append(getattr(p, 'name', 'desconocida'))
 
-        # Obtener dataset desde carpeta local o S3
+        # Get dataset from local folder or S3
         print(">>Getting dataset images")
         if dataset_folder:
             dataset_imgs_list = [d['image'] for d in self.get_images_from_local_folder(dataset_folder)]
@@ -418,7 +384,7 @@ class ImageSimilarityResNet:
             print(">>Image", idx + 1)
             filename = pacient_filenames[idx]
 
-            # ---------- Métrica: Cosine ----------
+            # ---------- Metric: Cosine ----------
             print(">>Calculating cosine similarity")
             try:
                 pacient_tensor = self.transform(Image.fromarray(cv2.cvtColor(pacient_img, cv2.COLOR_BGR2RGB))).unsqueeze(0)
@@ -438,7 +404,7 @@ class ImageSimilarityResNet:
             except Exception as e:
                 print("Error en cosine:", e)
 
-            # # ---------- Métrica: Dice ----------
+            # # ---------- Metric: Dice ----------
             print(">>Calculating dice coefficient")
             try:
                 pacient_mask = self.extract_green_mask(pacient_img)
@@ -454,7 +420,7 @@ class ImageSimilarityResNet:
             except Exception as e:
                 print("Error en dice:", e)
 
-            # # ---------- Métrica: IoU ----------
+            # # ---------- Metric: IoU ----------
             print(">>Calculating IoU")
             try:
                 pacient_mask = self.extract_green_mask(pacient_img)
@@ -470,7 +436,7 @@ class ImageSimilarityResNet:
             except Exception as e:
                 print("Error en iou:", e)
 
-            # # ---------- Métrica: PSNR ----------
+            # # ---------- Metric: PSNR ----------
             print(">>Calculating PSNR")
             try:
                 psnr_scores = []
@@ -485,7 +451,7 @@ class ImageSimilarityResNet:
             except Exception as e:
                 print("Error en psnr:", e)
 
-        # ---------- Métrica: FID (solo una vez por lote) ----------
+        # ---------- Metric: FID (solo una vez por lote) ----------
         print(">>Calculating FID")
         try:
             fid_value = self.calculate_fid_score(pacient_imgs_list, dataset_imgs_list)
@@ -495,7 +461,7 @@ class ImageSimilarityResNet:
         except Exception as e:
             print("Error en fid:", e)
 
-        # ---------- Guardar CSV ----------
+        # ---------- Save CSV ----------
         print(">>Saving CSV")
         try:
             with open(output_path, mode='w', newline='', encoding='utf-8') as file:
@@ -508,8 +474,8 @@ class ImageSimilarityResNet:
 
     def get_images_from_local_folder(self, folder_path):
         """
-        Lee todas las imágenes de una carpeta local y las retorna como una lista de diccionarios
-        con las claves 'image' (np.ndarray) y 'name' (nombre de archivo).
+        Reads all images from a local folder and returns them as a list of dictionaries
+        with the keys 'image' (np.ndarray) and 'name' (filename).
         """
         import cv2
         import numpy as np
@@ -526,24 +492,24 @@ class ImageSimilarityResNet:
 
 def visualizar_mascara_verde(imagen_bgr, extract_mask_fn, titulo="Visualización máscara"):
     """
-    Visualiza la imagen original BGR junto a la máscara binaria extraída con extract_green_mask.
+    Display the original BGR image alongside the binary mask extracted with extract_green_mask.
 
     Args:
-        imagen_bgr (np.ndarray): Imagen original en formato BGR.
-        extract_mask_fn (callable): Función que extrae la máscara (por ejemplo, extract_green_mask).
-        titulo (str): Título para la figura.
+        imagen_bgr (np.ndarray): Original image in BGR format.
+        extract_mask_fn (callable): Function that extracts the mask (e.g., extract_green_mask).
+        titulo (str): Title for the figure.
     """
-    # Asegurarse de que la imagen tenga el formato correcto
+    # Ensure the image has the correct format
     if imagen_bgr is None or imagen_bgr.ndim != 3 or imagen_bgr.shape[2] != 3:
         raise ValueError("La imagen debe ser un arreglo BGR válido con 3 canales.")
 
-    # Convertir imagen BGR a RGB para visualizar con matplotlib
+    # Convert BGR image to RGB for visualization with matplotlib
     imagen_rgb = cv2.cvtColor(imagen_bgr, cv2.COLOR_BGR2RGB)
 
-    # Generar máscara binaria
+    # Generate binary mask
     mascara_binaria = extract_mask_fn(imagen_bgr)
 
-    # Mostrar lado a lado
+    # Show side by side
     plt.figure(figsize=(10, 5))
     plt.subplot(1, 2, 1)
     plt.imshow(imagen_rgb)
@@ -566,7 +532,7 @@ class ImageSimilarityTest:
 
     def are_images_identical(self):
         """
-        Compara si dos imágenes son idénticas pixel a pixel.
+        Compares if two images are identical pixel by pixel.
         """
         original = cv2.imread(self.original_image_path)
         compare = cv2.imread(self.compare_image_path)
@@ -580,44 +546,44 @@ class ImageSimilarityTest:
 
     def calculate_similarity(self):
         """
-        Calcula la similitud entre dos imágenes utilizando SIFT y FLANN.
-        Devuelve el porcentaje de similitud y la imagen con los matches.
+        Calculates the similarity between two images using SIFT and FLANN.
+        Returns the similarity percentage and the image with the matches.
         """
         original = cv2.imread(self.original_image_path, cv2.IMREAD_GRAYSCALE)
         compare = cv2.imread(self.compare_image_path, cv2.IMREAD_GRAYSCALE)
 
-        # Inicializar SIFT
+        # Initialize SIFT
         print(">>Initializing SIFT")
         sift = cv2.SIFT_create()
 
-        # Detectar keypoints y descriptores
+        # Detect keypoints and descriptors
         print(">>Detecting keypoints and descriptors")
         kp1, desc1 = sift.detectAndCompute(original, None)
         kp2, desc2 = sift.detectAndCompute(compare, None)
 
-        # Configurar FLANN
+        # Configure FLANN
         print(">>Configuring FLANN")
         index_params = dict(algorithm=0, trees=5)
         search_params = dict()
         flann = cv2.FlannBasedMatcher(index_params, search_params)
 
-        # Encontrar matches
+        # Find matches
         print(">>Finding matches")
         matches = flann.knnMatch(desc1, desc2, k=2)
 
-        # Filtrar buenos matches usando el ratio de Lowe
+        # Filter good matches using the Lowe ratio
         print(">>Filtering good matches")
         good_points = []
         for m, n in matches:
             if m.distance < 0.6 * n.distance:
                 good_points.append(m)
 
-        # Calcular el porcentaje de similitud
+        # Calculate the similarity percentage
         print(">>Calculating similarity")
         number_keypoints = min(len(kp1), len(kp2))
         similarity_percentage = (len(good_points) / number_keypoints * 100 if number_keypoints > 0 else 0)
 
-        # Dibujar los matches
+        # Draw the matches
         print(">>Drawing matches")
         result_image = cv2.drawMatches(
             cv2.imread(self.original_image_path), kp1,
@@ -625,7 +591,7 @@ class ImageSimilarityTest:
             good_points, None
         )
 
-        # Guardar la imagen resultante
+        # Save the result image
         print(">>Saving result image")
         result_path = os.path.join(settings.MEDIA_ROOT, "feature_matching.jpg")
         cv2.imwrite(result_path, result_image)

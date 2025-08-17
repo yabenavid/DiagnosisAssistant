@@ -5,14 +5,14 @@ from managementdataset.models import ImgDataset
 
 def get_images_from_s3(image_names, segment_type='SAM'):
     """
-    Descarga imágenes desde S3 y las retorna como objetos que pueden ser procesados con OpenCV.
-    
-    Parámetros:
-    image_names (list): Lista de nombres de imágenes a descargar desde S3.
-    segment_type (str): 'SAM' o 'Skimage'
-    
-    Retorna:
-    list: Lista de imágenes como arrays de numpy.
+    Download images from S3 and return them as objects that can be processed with OpenCV.
+
+    Parameters:
+    image_names (list): List of image names to download from S3.
+    segment_type (str): 'SAM', 'ScikitImage' or 'UNet'
+
+    Returns:
+    list: List of images as numpy arrays.
     """
     images = []
     storage = ImgDataset().image.storage
@@ -35,11 +35,11 @@ def get_images_from_s3(image_names, segment_type='SAM'):
 
 def get_all_images_from_s3(segment_type='SAM'):
     """
-    Descarga todas las imágenes desde S3 y las retorna como objetos que pueden ser procesados con OpenCV.
+    Download all images from S3 and return them as objects that can be processed with OpenCV.
 
-    segment_type (str): 'SAM', 'ScikitImage' o 'UNet'
-    Retorna:
-    list: Lista de imágenes como arrays de numpy.
+    segment_type (str): 'SAM', 'ScikitImage' or 'UNet'
+    Returns:
+    list: List of images as numpy arrays.
     """
     images = []
     storage = ImgDataset().image.storage
@@ -49,7 +49,7 @@ def get_all_images_from_s3(segment_type='SAM'):
         all_files = storage.listdir(prefix)
         for image_path in all_files[1]:
             with storage.open(f"{prefix}{image_path}", 'rb') as image_file:
-                print("image file:", image_file)
+                print(f"Downloading image: {image_path}")
                 image_bytes = image_file.read()
                 if image_bytes:
                     image_array = np.frombuffer(image_bytes, np.uint8)
@@ -57,6 +57,7 @@ def get_all_images_from_s3(segment_type='SAM'):
                     images.append({'image': image, 'name': image_path})
                 else:
                     print(f"Error: La imagen {image_path} está vacía.")
+        print(f"Se obtuvieron {len(images)} imágenes del dataset {segment_type}.")
     except Exception as e:
         print(f"Error al descargar las imágenes desde S3: {e}")
     return images

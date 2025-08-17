@@ -9,14 +9,14 @@ class EmailService:
     @staticmethod
     def send_email_with_pdf(subject, body, to_emails, pdf_content, filename="diagnostico.pdf"):
         """
-        Envía un email con PDF adjunto
+        Sends an email with a PDF attachment.
         
         Args:
-            subject (str): Asunto del email
-            body (str): Cuerpo del email
-            to_emails (list): Lista de emails destinatarios
-            pdf_content (bytes): Contenido binario del PDF
-            filename (str): Nombre del archivo adjunto
+            subject (str): Email subject
+            body (str): Email body
+            to_emails (list): List of recipient email addresses
+            pdf_content (bytes): PDF binary content
+            filename (str): Attachment file name
         """
         try:
             email = EmailMessage(

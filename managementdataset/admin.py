@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import ImgDataset  # sustituir por el nombre de vuestra app
+from .models import ImgDataset
 
 @admin.register(ImgDataset)
 class ImgDatasetAdmin(admin.ModelAdmin):

@@ -18,7 +18,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        # Intenta validar las credenciales
+        # Validate user credentials
         try:
             data = super().validate(attrs)
         except Exception as e:
@@ -38,8 +38,8 @@ class CustomAuthenticationFailed(APIException):
     default_code = "authentication_failed"
 
     def get_full_details(self):
-        # Personaliza la estructura de la respuesta
+        # Customize error response structure
         return {
-            "message": self.default_detail,  # Usa el campo "message" en lugar de "detail"
-            "code": self.default_code,       # Agrega un código de error (opcional)
+            "message": self.default_detail,
+            "code": self.default_code,
         }
