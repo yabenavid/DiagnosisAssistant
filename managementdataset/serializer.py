@@ -55,7 +55,6 @@ class ZipImageUploadSerializer(serializers.Serializer):
 
         try:
             with ZipFile(zip_file, 'r') as zip_ref:
-                print("antes del loop")
                 for file_name in zip_ref.namelist():
                     cont = cont + 1
                     print(f'>>>>Imagen {cont} | Nombre: {file_name}')
@@ -64,10 +63,8 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         image_content = ContentFile(image_file, name=file_name)
                         
                         print('INITIALIZING VECTORIZATION')
-                        step = 'vectorizando imagen: ' + file_name
-                        print(step)
 
-                        # VECTORIZAR
+                        # Vectorization
                         if segment_model == '1' or segment_model == '2':
                             resized_images, resized_images_base64 = image_resizer.procesar_imagenes([image_content])
                             print('VECTORIZATION FINISHED')
@@ -77,12 +74,8 @@ class ZipImageUploadSerializer(serializers.Serializer):
                         resized_image = resized_images[0]
                         original_path = default_storage.save("uploads/" + resized_image.name, ContentFile(resized_image.read()))
 
-                        # SEGMENTAR
+                        # Segmentation
                         print('INITIALIZING SEGMENTATION')
-                        step = 'segmentando imagen: ' + resized_image.name
-                        print(step)
-
-                        print('segment_model: ' + segment_model)
                         
                         if segment_model == '1':
                             segmenter_instance = SamImageSegmenter()
@@ -100,27 +93,20 @@ class ZipImageUploadSerializer(serializers.Serializer):
 
                         print('SEGMENTATION FINISHED')
 
-                        step = 'guardando instancia en DB'
-                        print(step)
-
+                        # Save the image instance
                         img_instance = ImgDataset()
                         img_instance.segment_type = segment_type  # Temp attribute
                         img_instance.image = segmented_images[0]
                         img_instance.save()
 
-                        step = "Extrayendo keypoints y descriptores"
-                        print(step)
-
-                        # Extraer y guardar keypoints y descriptores
+                        # Extract and save keypoints and descriptors
                         img_instance.extract_and_save_features(default_storage.path(original_path))
                         images.append(img_instance)
         except Exception as e:
             ex = f'Failed reading, segmenting or saving the image. Reason: {e}'
             print(ex)
 
-        # limpiar carpeta uploads
-        step = 'limpiando carpeta uploads'
-        print(step)
+        # Clean uploads folder
         uploads_path = default_storage.path("uploads")
         for filename in os.listdir(uploads_path):
             file_path = os.path.join(uploads_path, filename)

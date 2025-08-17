@@ -12,7 +12,7 @@ from managementdoctor.models import Doctor, Belong
 from django.contrib.auth.models import User
 
 # Create your views here.
-@authentication_classes([JWTAuthentication])  # Requiere autenticación JWT
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAdminUser]) 
 class HospitalView(viewsets.ModelViewSet):
     serializer_class = HospitalSerializer

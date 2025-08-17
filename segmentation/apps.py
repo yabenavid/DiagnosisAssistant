@@ -9,7 +9,7 @@ class SegmentationConfig(AppConfig):
     name = 'segmentation'
 
     def ready(self):
-        # Evitar que se cargue el modelo en el primer proceso (el del autoreloader)
+        # Prevent the model from loading in the first process (the autoreloader)
         is_main_process = os.environ.get('RUN_MAIN') == 'true' or 'gunicorn' in sys.argv or 'uwsgi' in sys.argv
 
         if not is_main_process:
