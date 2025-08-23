@@ -29,7 +29,15 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['3.22.229.96', 'localhost']
+ALLOWED_HOSTS = [
+    'oncojuntas.xyz',
+    'www.oncojuntas.xyz',
+    '3.22.229.96',
+    'localhost',
+    '127.0.0.1',
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -143,7 +151,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # cors authorization
 # CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
-CORS_ALLOWED_ORIGINS = ["http://3.22.229.96"]
+CORS_ALLOWED_ORIGINS = [
+    "http://3.22.229.96",
+    "https://oncojuntas.xyz",
+    "https://www.oncojuntas.xyz"
+]
 
 CORS_ALLOW_CREDENTIALS = True
 
