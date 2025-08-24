@@ -30,9 +30,7 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    '.oncojuntas.xyz',
-    'localhost',
-    '127.0.0.1'
+    '*'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
