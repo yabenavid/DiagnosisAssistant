@@ -18,7 +18,7 @@ class SegmentationConfig(AppConfig):
         from .models import SamImageSegmenter
         global segmenter_instance
 
-        print("Cargando modelo SAM...")
-        segmenter_instance = SamImageSegmenter()
-        # segmenter_instance = None
-        print("Modelo SAM cargado exitosamente.")
+        # print("Cargando modelo SAM...")
+        # segmenter_instance = SamImageSegmenter()
+        segmenter_instance = None
+        # print("Modelo SAM cargado exitosamente.")
