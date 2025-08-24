@@ -30,7 +30,10 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    '*'
+    '.oncojuntas.xyz',
+    '3.22.229.96',
+    'localhost',
+    '127.0.0.1'
 ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -154,9 +157,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CORS_ALLOWED_ORIGINS = ["http://localhost:5173"]
 CORS_ALLOWED_ORIGINS = [
     'https://oncojuntas.xyz',
-    'https://www.oncojuntas.xyz'
+    'https://www.oncojuntas.xyz',
+    'https://3.22.229.96:443'
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOW_CREDENTIALS = True
 
